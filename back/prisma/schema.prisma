@@ -6,10 +6,97 @@ datasource db {
   provider = "postgresql"
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  userId       Int       @id @default(autoincrement()) @map("user_id")
+  firstName    String    @db.VarChar(50)               @map("first_name")
+  lastName     String    @db.VarChar(50)               @map("last_name")
+  email        String    @unique                       @db.VarChar(100)
+  passwordHash String    @db.VarChar(255)              @map("password_hash")
+  signupDate   DateTime  @db.Date                      @map("signup_date")
+  role         UserRole
+
+  practices    UserExercise[]
+  views        UserResourceView[]
+
+  @@map("users")
+}
+
+model Exercise {
+  exerciseId   Int     @id @default(autoincrement()) @map("exercise_id")
+  title        String  @db.VarChar(100)
+  description  String  @db.Text
+  exerciseType String  @db.VarChar(50)               @map("exercise_type")
+  duration     Int
+  benefit      String  @db.Text
+
+  practices    UserExercise[]
+
+  @@map("exercises")
+}
+
+model Resource {
+  resourceId   Int     @id @default(autoincrement()) @map("resource_id")
+  title        String  @db.VarChar(150)
+  content      String  @db.Text
+  resourceType String  @db.VarChar(50)               @map("resource_type")
+
+  views        UserResourceView[]
+  categories   ResourceCategory[]
+
+  @@map("resources")
+}
+
+model Category {
+  categoryId Int    @id @default(autoincrement()) @map("category_id")
+  label      String @unique                       @db.VarChar(50)
+
+  resources  ResourceCategory[]
+
+  @@map("categories")
+}
+
+model UserExercise {
+  practiceId        Int      @id @default(autoincrement()) @map("practice_id")
+  userId            Int      @map("user_id")
+  exerciseId        Int      @map("exercise_id")
+  completedAt       DateTime @db.Timestamp(6)              @map("completed_at")
+  durationCompleted Int      @map("duration_completed")
+
+  user     User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  exercise Exercise @relation(fields: [exerciseId], references: [exerciseId], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([exerciseId])
+  @@map("user_exercise")
+}
+
+model UserResourceView {
+  viewId     Int      @id @default(autoincrement()) @map("view_id")
+  userId     Int      @map("user_id")
+  resourceId Int      @map("resource_id")
+  viewedAt   DateTime @db.Timestamp(6)              @map("viewed_at")
+
+  user     User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  resource Resource @relation(fields: [resourceId], references: [resourceId], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([resourceId])
+  @@map("user_resource_view")
+}
+
+model ResourceCategory {
+  resourceId Int @map("resource_id")
+  categoryId Int @map("category_id")
+
+  resource Resource @relation(fields: [resourceId], references: [resourceId], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [categoryId], onDelete: Cascade)
+
+  @@id([resourceId, categoryId])
+  @@index([categoryId])
+  @@map("resource_category")
 }
