@@ -1,9 +1,12 @@
 .authApp {
+  /* Conteneur global avec empilement du canvas */
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   gap: 2rem;
   padding: 1.5rem 1.25rem 2.5rem;
+  position: relative;
+  overflow: hidden;
 }
 
 .authHeader {
@@ -68,6 +71,15 @@
 .authMain {
   display: flex;
   justify-content: center;
+}
+
+.authContent {
+  /* Place le contenu au-dessus du canvas */
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 @media (min-width: 768px) {
