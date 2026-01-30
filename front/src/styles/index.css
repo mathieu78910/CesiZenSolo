@@ -1,0 +1,13 @@
+:root {
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  color: #111;
+  background: #f7f3ee;
+}
+
+body {
+  margin: 0;
+}
+
+.app {
+  padding: 2rem;
+}
