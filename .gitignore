@@ -1,7 +1,13 @@
-node_modules
-.env.local
-.env.*.local
+# Node
+node_modules/
+**/node_modules/
+
+# Env
+**/.env
+**/.env.local
+**/.env.*.local
+
+# OS
 .DS_Store
 
-# Prisma
-back/prisma/migrations
+back/prisma/migrations/
