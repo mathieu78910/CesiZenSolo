@@ -1,13 +1,18 @@
 :root {
   font-family: "Space Grotesk", system-ui, sans-serif;
-  color: #111;
+  color: #151515;
   background: #f7f3ee;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
+  background: radial-gradient(circle at top, #fff6ea 0%, #f7f3ee 55%, #efe7de 100%);
 }
 
-.app {
-  padding: 2rem;
+a {
+  color: inherit;
 }
