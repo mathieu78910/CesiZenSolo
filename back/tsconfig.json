@@ -3,9 +3,10 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
     "types": ["node"],
     "noEmit": true,
     "strict": false
   },
-  "include": ["prisma.config.ts", "types/**/*.d.ts"]
+  "include": ["prisma.config.ts", "src/**/*.ts", "types/**/*.d.ts"]
 }
