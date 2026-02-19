@@ -1,0 +1,107 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Space+Grotesk:wght@400;500;600&display=swap");
+
+.shell {
+  min-height: 100vh;
+  background: radial-gradient(circle at top left, #f8f1ff 0%, #eef6f4 45%, #f4ede4 100%);
+  color: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 40px;
+  background: linear-gradient(120deg, rgba(24, 87, 64, 0.08), rgba(195, 94, 24, 0.12));
+  border-bottom: 1px solid rgba(26, 26, 26, 0.08);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+.logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: #1e6d53;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-family: "Montserrat", sans-serif;
+  letter-spacing: 0.04em;
+}
+
+.title {
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: rgba(26, 26, 26, 0.6);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.userChip {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 10px 25px rgba(26, 26, 26, 0.08);
+  font-family: "Space Grotesk", sans-serif;
+}
+
+.userLabel {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(26, 26, 26, 0.5);
+}
+
+.logout {
+  border: none;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: #f06d3f;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.logout:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px rgba(240, 109, 63, 0.3);
+}
+
+.main {
+  flex: 1;
+  padding: 32px 40px 48px;
+}
+
+@media (max-width: 900px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px 24px;
+  }
+
+  .main {
+    padding: 24px;
+  }
+}
