@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { login } from "../api/auth.js";
+import { auth } from "@back/cesizen-api";
 import { saveAuth } from "../utils/auth.js";
 import styles from "../styles/AuthCard.module.css";
 
@@ -21,7 +21,7 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const data = await login(form);
+      const data = await auth.login(form);
       saveAuth({ accessToken: data.accessToken, user: data.user });
       navigate("/admin/users", { replace: true });
     } catch (err) {

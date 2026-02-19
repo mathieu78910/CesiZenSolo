@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createUser, deleteUser, listUsers, updateUser } from "../api/users.js";
+import { users as usersApi } from "@back/cesizen-api";
 import { getAccessToken, getAuthUser, saveAuth } from "../utils/auth.js";
 import styles from "../styles/AdminUsers.module.css";
 
@@ -32,7 +32,7 @@ export default function AdminUsers() {
     setIsLoading(true);
     setError("");
     try {
-      const data = await listUsers({ page, limit, search, token });
+      const data = await usersApi.listUsers({ page, limit, search, token });
       setUsers(data.users || []);
       setTotal(data.total || 0);
       setPage(data.page || page);
@@ -84,7 +84,7 @@ export default function AdminUsers() {
           password: form.password,
           role: form.role
         };
-        await createUser({ payload, token });
+        await usersApi.createUser({ payload, token });
         resetForm();
         await fetchUsers();
       } catch (err) {
@@ -111,7 +111,7 @@ export default function AdminUsers() {
     }
 
     try {
-      const response = await updateUser({ userId: editingId, payload, token });
+      const response = await usersApi.updateUser({ userId: editingId, payload, token });
       if (currentUser?.userId === response?.user?.userId) {
         saveAuth({ accessToken: token, user: response.user });
       }
@@ -126,7 +126,7 @@ export default function AdminUsers() {
     setError("");
     if (!window.confirm("Supprimer cet utilisateur ?")) return;
     try {
-      await deleteUser({ userId, token });
+      await usersApi.deleteUser({ userId, token });
       await fetchUsers();
     } catch (err) {
       setError(err.message || "Suppression impossible");

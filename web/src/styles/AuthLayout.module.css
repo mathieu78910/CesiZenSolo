@@ -74,7 +74,6 @@
 }
 
 .authContent {
-  /* Place le contenu au-dessus du canvas */
   position: relative;
   z-index: 1;
   display: flex;

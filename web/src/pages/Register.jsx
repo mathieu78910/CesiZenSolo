@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { register } from "../api/auth.js";
+import { auth } from "@back/cesizen-api";
 import { saveAuth } from "../utils/auth.js";
 import styles from "../styles/AuthCard.module.css";
 
@@ -32,7 +32,7 @@ export default function Register() {
 
     setLoading(true);
     try {
-      const data = await register({
+      const data = await auth.register({
         firstName: form.firstName,
         lastName: form.lastName,
         email: form.email,

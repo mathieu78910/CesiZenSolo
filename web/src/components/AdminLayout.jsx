@@ -1,5 +1,5 @@
 import { Link, Outlet, useNavigate } from "react-router-dom";
-import { logout } from "../api/auth.js";
+import { auth } from "@back/cesizen-api";
 import { clearAuth, getAuthUser } from "../utils/auth.js";
 import styles from "../styles/AdminLayout.module.css";
 
@@ -9,7 +9,7 @@ export default function AdminLayout() {
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await auth.logout();
     } catch {
       // Ignore logout API errors and clear local session anyway.
     } finally {
