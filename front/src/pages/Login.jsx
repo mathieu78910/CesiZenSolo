@@ -1,7 +1,36 @@
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { login } from "../api/auth.js";
+import { saveAuth } from "../utils/auth.js";
 import styles from "../styles/AuthCard.module.css";
 
 export default function Login() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+
+    if (!form.email || !form.password) {
+      setError("Veuillez renseigner votre email et mot de passe.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await login(form);
+      saveAuth({ accessToken: data.accessToken, user: data.user });
+      navigate("/admin/users", { replace: true });
+    } catch (err) {
+      setError(err.message || "Connexion impossible");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <section className={styles.authCard}>
       <div className={styles.authCardHeader}>
@@ -9,15 +38,30 @@ export default function Login() {
         <p>Accédez à votre espace CesiZen.</p>
       </div>
 
-      <form className={styles.authForm}>
+      <form className={styles.authForm} onSubmit={handleSubmit}>
         <label className={styles.field}>
           <span>Email</span>
-          <input type="email" name="email" placeholder="vous@exemple.com" required />
+          <input
+            type="email"
+            name="email"
+            placeholder="vous@exemple.com"
+            value={form.email}
+            onChange={(event) => setForm({ ...form, email: event.target.value })}
+            required
+          />
         </label>
         <label className={styles.field}>
           <span>Mot de passe</span>
-          <input type="password" name="password" placeholder="••••••••" required />
+          <input
+            type="password"
+            name="password"
+            placeholder="••••••••"
+            value={form.password}
+            onChange={(event) => setForm({ ...form, password: event.target.value })}
+            required
+          />
         </label>
+        {error && <p className={styles.errorText}>{error}</p>}
         <div className={styles.formRow}>
           <label className={styles.checkbox}>
             <input type="checkbox" name="remember" />
@@ -27,8 +71,8 @@ export default function Login() {
             Mot de passe oublié ?
           </button>
         </div>
-        <button type="submit" className={styles.primaryButton}>
-          Se connecter
+        <button type="submit" className={styles.primaryButton} disabled={loading}>
+          {loading ? "Connexion..." : "Se connecter"}
         </button>
       </form>
 

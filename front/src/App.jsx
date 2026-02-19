@@ -2,6 +2,9 @@ import { RouterProvider, createBrowserRouter, Navigate, Link, Outlet } from "rea
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import ThreeBackground from "./components/ThreeBackground.jsx";
+import AdminLayout from "./components/AdminLayout.jsx";
+import AdminUsers from "./pages/AdminUsers.jsx";
+import { loadAuth } from "./utils/auth.js";
 import styles from "./styles/AuthLayout.module.css";
 
 // Layout commun aux pages d'authentification.
@@ -40,6 +43,17 @@ function AuthLayout() {
   );
 }
 
+function RequireAdmin({ children }) {
+  const auth = loadAuth();
+  if (!auth?.accessToken) {
+    return <Navigate to="/login" replace />;
+  }
+  if (auth?.user?.role !== "ADMIN") {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+}
+
 // Routes principales (login/register).
 const router = createBrowserRouter([
   {
@@ -51,6 +65,18 @@ const router = createBrowserRouter([
       { path: "*", element: <Navigate to="/login" replace /> },
     ],
   },
+  {
+    path: "/admin",
+    element: (
+      <RequireAdmin>
+        <AdminLayout />
+      </RequireAdmin>
+    ),
+    children: [
+      { index: true, element: <Navigate to="/admin/users" replace /> },
+      { path: "users", element: <AdminUsers /> }
+    ]
+  }
 ]);
 
 export default function App() {

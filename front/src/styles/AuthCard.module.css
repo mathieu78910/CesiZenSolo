@@ -107,6 +107,18 @@
   font-weight: 600;
 }
 
+.primaryButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.errorText {
+  margin: 0;
+  color: #a32c24;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
 .authFooter {
   margin: 0;
   font-size: 0.9rem;
