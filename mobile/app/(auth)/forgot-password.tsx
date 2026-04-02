@@ -1,16 +1,18 @@
+import { auth } from "@back/cesizen-api";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link } from "expo-router";
-import * as React from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
-import { AuthScaffold } from "./AuthScaffold";
-import { authStyles as styles } from "./styles";
+import { useState } from "react";
+import { ActivityIndicator, Pressable, Text, TextInput, View } from "react-native";
+import AuthScaffold from "./AuthScaffold";
+import styles from "./styles";
 
 export default function ForgotPasswordScreen() {
-  const [email, setEmail] = React.useState("");
-  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const onSubmit = React.useCallback(() => {
+  const onSubmit = async () => {
     setErrorMessage(null);
     setSuccessMessage(null);
 
@@ -19,8 +21,16 @@ export default function ForgotPasswordScreen() {
       return;
     }
 
-    setSuccessMessage("Fonction de réinitialisation non disponible avec l'API actuelle.");
-  }, [email]);
+    try {
+      setIsLoading(true);
+      const response = await auth.forgotPassword({ email: email.trim() });
+      setSuccessMessage(response.message || "Demande envoyee.");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Envoi impossible.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <AuthScaffold>
@@ -55,11 +65,15 @@ export default function ForgotPasswordScreen() {
           {!!errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
 
           <Pressable
-            style={({ pressed }) => [styles.primaryButton, !email.trim() && styles.primaryButtonDisabled, pressed && styles.primaryButtonPressed]}
+            style={({ pressed }) => [
+              styles.primaryButton,
+              (!email.trim() || isLoading) && styles.primaryButtonDisabled,
+              pressed && styles.primaryButtonPressed
+            ]}
             onPress={onSubmit}
-            disabled={!email.trim()}
+            disabled={!email.trim() || isLoading}
           >
-            <Text style={styles.primaryButtonText}>Envoyer</Text>
+            {isLoading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={styles.primaryButtonText}>Envoyer</Text>}
           </Pressable>
 
           <View style={styles.footerRow}>

@@ -1,10 +1,24 @@
 // Routes utilisateurs (CRUD).
 // Rôle: mapper les endpoints HTTP vers les handlers.
 import { Router } from "express";
-import { createUser, deleteUser, getUserById, listUsers, updateUser } from "../controllers/user.controller.js";
+import {
+  createUser,
+  deleteUser,
+  getCurrentUser,
+  getCurrentUserLibrary,
+  getUserById,
+  listUsers,
+  updateCurrentUser,
+  updateUser
+} from "../controllers/user.controller.js";
 import { authenticateJWT, requireRole } from "../middlewares/auth.middleware.js";
 
 const router = Router();
+
+// SELF (authenticated user)
+router.get("/me", authenticateJWT, getCurrentUser);
+router.get("/me/library", authenticateJWT, getCurrentUserLibrary);
+router.patch("/me", authenticateJWT, updateCurrentUser);
 
 // CREATE (admin only)
 router.post("/", authenticateJWT, requireRole("ADMIN"), createUser);

@@ -1,14 +1,23 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { auth } from "@back/cesizen-api";
 import { saveAuth } from "../utils/auth.js";
 import styles from "../styles/AuthCard.module.css";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const authError = location.state?.authError;
+    if (authError) {
+      setError(authError);
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location.pathname, location.state, navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();

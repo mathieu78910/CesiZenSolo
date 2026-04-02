@@ -7,6 +7,7 @@ import {
   listUsers as listUsersService,
   updateUser as updateUserService
 } from "../services/user.service.js";
+import { listUserResourceLibrary } from "../services/resource.service.js";
 import {
   createUserSchema,
   listUsersQuerySchema,
@@ -65,6 +66,37 @@ async function getUserById(req, res) {
       return res.status(404).json({ message: "Utilisateur introuvable" });
     }
     // Erreur inattendue -> HTTP 500
+    return res.status(500).json({ message: "Erreur serveur" });
+  }
+}
+
+async function getCurrentUser(req, res) {
+  const userId = resolveTargetUserId(req, res);
+  if (!userId) {
+    return;
+  }
+
+  try {
+    const user = await getUserByIdService(userId);
+    return res.status(200).json({ user });
+  } catch (error) {
+    if (error instanceof Error && error.message === "USER_NOT_FOUND") {
+      return res.status(404).json({ message: "Utilisateur introuvable" });
+    }
+    return res.status(500).json({ message: "Erreur serveur" });
+  }
+}
+
+async function getCurrentUserLibrary(req, res) {
+  const userId = resolveTargetUserId(req, res);
+  if (!userId) {
+    return;
+  }
+
+  try {
+    const library = await listUserResourceLibrary(userId);
+    return res.status(200).json(library);
+  } catch {
     return res.status(500).json({ message: "Erreur serveur" });
   }
 }
@@ -145,6 +177,42 @@ async function updateUser(req, res) {
     if (error instanceof Error && error.message === "EMAIL_IN_USE") {
       return res.status(409).json({ message: "Utilisateur déjà existant" });
     }
+    if (error instanceof Error && error.message === "USER_ANONYMIZED") {
+      return res.status(409).json({ message: "Compte anonymise, modification impossible" });
+    }
+    return res.status(500).json({ message: "Erreur serveur" });
+  }
+}
+
+async function updateCurrentUser(req, res) {
+  const userId = resolveTargetUserId(req, res);
+  if (!userId) {
+    return;
+  }
+
+  if (Object.prototype.hasOwnProperty.call(req.body ?? {}, "role")) {
+    return res.status(400).json({ message: "Modification du role interdite" });
+  }
+
+  const parsed = updateUserSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ message: "Body invalide", issues: parsed.error.issues });
+  }
+
+  try {
+    const data: UpdateUserInput = parsed.data;
+    const user = await updateUserService(userId, data);
+    return res.status(200).json({ user });
+  } catch (error) {
+    if (error instanceof Error && error.message === "EMAIL_IN_USE") {
+      return res.status(409).json({ message: "Utilisateur deja existant" });
+    }
+    if (error instanceof Error && error.message === "USER_NOT_FOUND") {
+      return res.status(404).json({ message: "Utilisateur introuvable" });
+    }
+    if (error instanceof Error && error.message === "USER_ANONYMIZED") {
+      return res.status(409).json({ message: "Compte anonymise, modification impossible" });
+    }
     return res.status(500).json({ message: "Erreur serveur" });
   }
 }
@@ -175,4 +243,14 @@ async function deleteUser(req, res) {
 
 
 // Note: ne jamais renvoyer passwordHash.
-export { resolveTargetUserId, getUserById, listUsers, createUser, updateUser, deleteUser };
+export {
+  resolveTargetUserId,
+  getCurrentUser,
+  getCurrentUserLibrary,
+  getUserById,
+  listUsers,
+  createUser,
+  updateCurrentUser,
+  updateUser,
+  deleteUser
+};

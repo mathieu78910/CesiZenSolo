@@ -3,6 +3,7 @@ import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import ThreeBackground from "./components/ThreeBackground.jsx";
 import AdminLayout from "./components/AdminLayout.jsx";
+import AdminArticles from "./pages/AdminArticles.jsx";
 import AdminUsers from "./pages/AdminUsers.jsx";
 import { loadAuth } from "./utils/auth.js";
 import styles from "./styles/AuthLayout.module.css";
@@ -73,7 +74,8 @@ const router = createBrowserRouter([
       </RequireAdmin>
     ),
     children: [
-      { index: true, element: <Navigate to="/admin/users" replace /> },
+      { index: true, element: <Navigate to="/admin/articles" replace /> },
+      { path: "articles", element: <AdminArticles /> },
       { path: "users", element: <AdminUsers /> }
     ]
   }

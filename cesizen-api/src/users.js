@@ -10,6 +10,15 @@ export const listUsers = ({ page, limit, search, token }) => {
   return apiRequest(`/api/users${query ? `?${query}` : ""}`, { token });
 };
 
+export const getMe = ({ token }) =>
+  apiRequest("/api/users/me", { token });
+
+export const getMyLibrary = ({ token }) =>
+  apiRequest("/api/users/me/library", { token });
+
+export const updateMe = ({ payload, token }) =>
+  apiRequest("/api/users/me", { method: "PATCH", body: payload, token });
+
 export const createUser = ({ payload, token }) =>
   apiRequest("/api/users", { method: "POST", body: payload, token });
 

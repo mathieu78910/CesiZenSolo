@@ -1,15 +1,16 @@
 import { LinearGradient } from "expo-linear-gradient";
-import * as React from "react";
+import type { ReactNode } from "react";
 import { Text, View } from "react-native";
-import { authStyles as styles } from "./styles";
+import styles from "./styles";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type AuthScaffoldProps = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
-export function AuthScaffold({ children }: AuthScaffoldProps) {
+export default function AuthScaffold({ children }: AuthScaffoldProps) {
   return (
-    <View style={styles.screen}>
+    <SafeAreaView style={styles.screen}>
       <LinearGradient colors={["#FFF6EA", "#F7F3EE", "#EFE7DE"]} style={styles.background} />
       <View style={styles.orbTop} />
       <View style={styles.orbBottom} />
@@ -26,6 +27,6 @@ export function AuthScaffold({ children }: AuthScaffoldProps) {
         </View>
         {children}
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

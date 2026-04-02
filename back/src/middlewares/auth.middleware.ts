@@ -46,7 +46,13 @@ export const authenticateJWT = (req: Request, res: Response, next: NextFunction)
     // Passe au handler suivant
     return next();
   } catch (error) {
-    return res.status(401).json({ message: "Token invalide" });
+    if (error instanceof jwt.TokenExpiredError) {
+      return res.status(401).json({ message: "Token expiré" });
+    }
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(401).json({ message: "Token invalide" });
+    }
+    return res.status(401).json({ message: "Authentification invalide" });
   }
 };
 

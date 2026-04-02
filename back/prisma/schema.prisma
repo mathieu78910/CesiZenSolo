@@ -12,17 +12,22 @@ enum UserRole {
 }
 
 model User {
-  userId       Int       @id @default(autoincrement()) @map("user_id")
-  firstName    String    @db.VarChar(50)               @map("first_name")
-  lastName     String    @db.VarChar(50)               @map("last_name")
-  email        String    @unique                       @db.VarChar(100)
-  passwordHash String    @db.VarChar(255)              @map("password_hash")
-  signupDate   DateTime  @db.Date                      @map("signup_date")
-  role         UserRole
+  userId        Int       @id @default(autoincrement()) @map("user_id")
+  firstName     String    @db.VarChar(50)               @map("first_name")
+  lastName      String    @db.VarChar(50)               @map("last_name")
+  email         String    @unique                       @db.VarChar(100)
+  passwordHash  String    @db.VarChar(255)              @map("password_hash")
+  signupDate    DateTime  @db.Date                      @map("signup_date")
+  role          UserRole
+  isAnonymized  Boolean   @default(false)               @map("is_anonymized")
+  anonymizedAt  DateTime? @db.Timestamp(6)              @map("anonymized_at")
 
   practices    UserExercise[]
   views        UserResourceView[]
+  likedResources UserResourceLike[]
+  savedResources UserSavedResource[]
 
+  @@index([isAnonymized])
   @@map("users")
 }
 
@@ -47,6 +52,8 @@ model Resource {
 
   views        UserResourceView[]
   categories   ResourceCategory[]
+  likes        UserResourceLike[]
+  saves        UserSavedResource[]
 
   @@map("resources")
 }
@@ -87,6 +94,32 @@ model UserResourceView {
   @@index([userId])
   @@index([resourceId])
   @@map("user_resource_view")
+}
+
+model UserResourceLike {
+  userId     Int      @map("user_id")
+  resourceId Int      @map("resource_id")
+  createdAt  DateTime @default(now()) @db.Timestamp(6) @map("created_at")
+
+  user       User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  resource   Resource @relation(fields: [resourceId], references: [resourceId], onDelete: Cascade)
+
+  @@id([userId, resourceId])
+  @@index([resourceId])
+  @@map("user_resource_like")
+}
+
+model UserSavedResource {
+  userId     Int      @map("user_id")
+  resourceId Int      @map("resource_id")
+  createdAt  DateTime @default(now()) @db.Timestamp(6) @map("created_at")
+
+  user       User     @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  resource   Resource @relation(fields: [resourceId], references: [resourceId], onDelete: Cascade)
+
+  @@id([userId, resourceId])
+  @@index([resourceId])
+  @@map("user_saved_resource")
 }
 
 model ResourceCategory {

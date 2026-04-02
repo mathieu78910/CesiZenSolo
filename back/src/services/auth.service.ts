@@ -8,7 +8,8 @@ const ACCESS_USER_FIELDS = {
   email: true,
   firstName: true,
   lastName: true,
-  role: true
+  role: true,
+  isAnonymized: true
 };
 
 // Création d'un compte + tokens
@@ -67,13 +68,16 @@ export const loginUser = async (input: { email: string; password: string }) => {
   if (!user) {
     throw new Error("INVALID_CREDENTIALS");
   }
+  if (user.isAnonymized) {
+    throw new Error("ACCOUNT_ANONYMIZED");
+  }
 
   const passwordValid = await bcrypt.compare(input.password, user.passwordHash);
   if (!passwordValid) {
     throw new Error("INVALID_CREDENTIALS");
   }
 
-  const { passwordHash: _passwordHash, ...publicUser } = user;
+  const { passwordHash: _passwordHash, isAnonymized: _isAnonymized, ...publicUser } = user;
   const tokens = {
     accessToken: signAccessToken({
       sub: publicUser.userId,
@@ -102,7 +106,7 @@ export const refreshTokens = async (refreshToken: string) => {
     select: ACCESS_USER_FIELDS
   });
 
-  if (!user) {
+  if (!user || user.isAnonymized) {
     throw new Error("INVALID_TOKEN");
   }
 

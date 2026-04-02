@@ -16,7 +16,8 @@ export default function AdminUsers() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [total, setTotal] = useState(0);
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [mode, setMode] = useState("create");
@@ -28,11 +29,11 @@ export default function AdminUsers() {
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total, limit]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (searchTerm = debouncedSearch) => {
     setIsLoading(true);
     setError("");
     try {
-      const data = await usersApi.listUsers({ page, limit, search, token });
+      const data = await usersApi.listUsers({ page, limit, search: searchTerm, token });
       setUsers(data.users || []);
       setTotal(data.total || 0);
       setPage(data.page || page);
@@ -45,9 +46,19 @@ export default function AdminUsers() {
   };
 
   useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearch(searchInput.trim());
+    }, 350);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [searchInput]);
+
+  useEffect(() => {
     fetchUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, limit, search]);
+  }, [page, limit, debouncedSearch]);
 
   const resetForm = () => {
     setForm(emptyForm);
@@ -226,10 +237,10 @@ export default function AdminUsers() {
             <div className={styles.controls}>
               <input
                 type="search"
-                value={search}
+                value={searchInput}
                 onChange={(event) => {
                   setPage(1);
-                  setSearch(event.target.value);
+                  setSearchInput(event.target.value);
                 }}
                 placeholder="Rechercher…"
               />
@@ -246,7 +257,7 @@ export default function AdminUsers() {
                   </option>
                 ))}
               </select>
-              <button type="button" className={styles.ghostButton} onClick={fetchUsers}>
+              <button type="button" className={styles.ghostButton} onClick={() => fetchUsers(searchInput.trim())}>
                 Rafraîchir
               </button>
             </div>

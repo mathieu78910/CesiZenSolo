@@ -1,25 +1,27 @@
 import { auth } from "@back/cesizen-api";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, useRouter } from "expo-router";
-import * as React from "react";
+import { useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import { AuthScaffold } from "./AuthScaffold";
-import { authStyles as styles } from "./styles";
+import { useAuth } from "../../features/auth/AuthProvider";
+import AuthScaffold from "./AuthScaffold";
+import styles from "./styles";
 
 export default function SignupScreen() {
   const router = useRouter();
-  const [form, setForm] = React.useState({
+  const { setSession } = useAuth();
+  const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const onSignupPress = React.useCallback(async () => {
+  const onSignupPress = async () => {
     setErrorMessage(null);
     setSuccessMessage(null);
 
@@ -34,21 +36,22 @@ export default function SignupScreen() {
 
     try {
       setIsLoading(true);
-      await auth.register({
+      const response = await auth.register({
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
         email: form.email.trim(),
         password: form.password,
       });
-      setSuccessMessage("Compte créé. Vous pouvez vous connecter.");
-      router.replace("/(auth)/login");
+      setSession({ accessToken: response.accessToken, user: response.user });
+      setSuccessMessage("Compte cree. Redirection vers votre espace.");
+      router.replace("/(tabs)/articles");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Inscription impossible.";
       setErrorMessage(message);
     } finally {
       setIsLoading(false);
     }
-  }, [form, router]);
+  }
 
   return (
     <AuthScaffold>
@@ -137,7 +140,7 @@ export default function SignupScreen() {
                 !form.password.trim() ||
                 !form.confirmPassword.trim() ||
                 isLoading) &&
-                styles.primaryButtonDisabled,
+              styles.primaryButtonDisabled,
               pressed && styles.primaryButtonPressed,
             ]}
             onPress={onSignupPress}

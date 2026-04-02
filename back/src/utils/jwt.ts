@@ -18,7 +18,7 @@ const getRequiredEnv = (key: string) => {
 // Access token (court)
 export const signAccessToken = (payload: JwtUserPayload) => {
   const secret = getRequiredEnv("JWT_ACCESS_SECRET");
-  const expiresIn = process.env.JWT_ACCESS_EXPIRES ?? "15m";
+  const expiresIn = process.env.JWT_ACCESS_EXPIRES ?? "30m";
   const options: SignOptions = { expiresIn: expiresIn as SignOptions["expiresIn"] };
   return jwt.sign(payload, secret, options);
 };

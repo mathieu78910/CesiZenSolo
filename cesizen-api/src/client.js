@@ -1,4 +1,5 @@
 let API_BASE_URL = "http://localhost:3000";
+let onAuthFailure = null;
 
 export function setApiBaseUrl(url) {
   API_BASE_URL = String(url || "").replace(/\/+$/, "");
@@ -6,6 +7,10 @@ export function setApiBaseUrl(url) {
 
 export function getApiBaseUrl() {
   return API_BASE_URL;
+}
+
+export function setAuthFailureHandler(handler) {
+  onAuthFailure = typeof handler === "function" ? handler : null;
 }
 
 export async function apiRequest(path, { method = "GET", body, token, credentials } = {}) {
@@ -28,6 +33,13 @@ export async function apiRequest(path, { method = "GET", body, token, credential
 
   if (!response.ok) {
     const message = data?.error || data?.message || "Erreur API";
+    if (response.status === 401 && token && onAuthFailure) {
+      onAuthFailure({
+        status: response.status,
+        message,
+        path
+      });
+    }
     const err = new Error(message);
     err.status = response.status;
     err.data = data;

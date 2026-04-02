@@ -1,6 +1,7 @@
 // Service utilisateurs (logique métier + accès Prisma).
 // Rôle: centraliser le CRUD et protéger les données sensibles.
 import bcrypt from "bcrypt";
+import { randomUUID } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import type { CreateUserInput, UpdateUserInput } from "../validators/user.validator.js";
 import { prisma } from "../utils/prisma.js";
@@ -12,8 +13,22 @@ const PUBLIC_USER_SELECT = {
   lastName: true,
   email: true,
   signupDate: true,
-  role: true
+  role: true,
+  isAnonymized: true,
+  anonymizedAt: true
 } satisfies Prisma.UserSelect;
+
+function buildAnonymizedEmail(userId: number): string {
+  return `deleted-user-${userId}-${randomUUID()}@cesizen.invalid`;
+}
+
+function buildAnonymizedIdentity(userId: number) {
+  return {
+    firstName: "Utilisateur",
+    lastName: `supprime-${userId}`,
+    email: buildAnonymizedEmail(userId)
+  };
+}
 
 // Liste paginée des utilisateurs + recherche optionnelle
 export const listUsers = async (input?: { page?: number; limit?: number; search?: string }) => {
@@ -28,13 +43,14 @@ export const listUsers = async (input?: { page?: number; limit?: number; search?
   const search = input?.search?.trim();
   const where: Prisma.UserWhereInput = search
     ? {
+        isAnonymized: false,
         OR: [
           { email: { contains: search, mode: "insensitive" } },
           { firstName: { contains: search, mode: "insensitive" } },
           { lastName: { contains: search, mode: "insensitive" } }
         ]
       }
-    : {};
+    : { isAnonymized: false };
 
   // Récupération + total pour la pagination
   const [users, total] = await Promise.all([
@@ -53,8 +69,8 @@ export const listUsers = async (input?: { page?: number; limit?: number; search?
 
 // Retourne un utilisateur par ID (ou erreur si absent)
 export const getUserById = async (userId: number) => {
-  const user = await prisma.user.findUnique({
-    where: { userId },
+  const user = await prisma.user.findFirst({
+    where: { userId, isAnonymized: false },
     select: PUBLIC_USER_SELECT
   });
   if (!user) {
@@ -94,10 +110,13 @@ export const createUser = async (input: CreateUserInput) => {
 export const updateUser = async (userId: number, input: UpdateUserInput) => {
   const existingById = await prisma.user.findUnique({
     where: { userId },
-    select: { userId: true }
+    select: { userId: true, isAnonymized: true }
   });
   if (!existingById) {
     throw new Error("USER_NOT_FOUND");
+  }
+  if (existingById.isAnonymized) {
+    throw new Error("USER_ANONYMIZED");
   }
 
   if (input.email) {
@@ -132,15 +151,34 @@ export const updateUser = async (userId: number, input: UpdateUserInput) => {
   return user;
 };
 
-// Suppression d'un utilisateur par ID
+// Anonymisation d'un utilisateur "supprime" afin de conserver l'historique
 export const deleteUser = async (userId: number) => {
   const existing = await prisma.user.findUnique({
     where: { userId },
-    select: { userId: true }
+    select: { userId: true, role: true, isAnonymized: true }
   });
   if (!existing) {
     throw new Error("USER_NOT_FOUND");
   }
-  await prisma.user.delete({ where: { userId } });
+  if (existing.isAnonymized) {
+    return true;
+  }
+
+  const anonymized = buildAnonymizedIdentity(userId);
+  const disabledPasswordHash = await bcrypt.hash(randomUUID(), 12);
+
+  await prisma.user.update({
+    where: { userId },
+    data: {
+      firstName: anonymized.firstName,
+      lastName: anonymized.lastName,
+      email: anonymized.email,
+      passwordHash: disabledPasswordHash,
+      role: "USER",
+      isAnonymized: true,
+      anonymizedAt: new Date()
+    }
+  });
+
   return true;
 };

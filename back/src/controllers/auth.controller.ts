@@ -79,6 +79,10 @@ export const login = async (req: Request, res: Response) => {
       console.warn("[auth][login][invalid_credentials]", { email, source: getRequestSource(req) });
       return res.status(401).json({ error: "Invalid credentials" });
     }
+    if (error instanceof Error && error.message === "ACCOUNT_ANONYMIZED") {
+      console.warn("[auth][login][account_anonymized]", { email, source: getRequestSource(req) });
+      return res.status(403).json({ error: "Account deleted" });
+    }
     console.error("[auth][login][error]", {
       email,
       source: getRequestSource(req),
@@ -108,4 +112,17 @@ export const refresh = async (req: Request, res: Response) => {
 export const logout = async (_req: Request, res: Response) => {
   res.clearCookie("refresh_token", buildCookieOptions());
   return res.status(204).send();
+};
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  const { email } = req.body ?? {};
+
+  if (!email || typeof email !== "string" || !email.trim()) {
+    return res.status(400).json({ error: "Missing email" });
+  }
+
+  // The project does not yet send real reset emails.
+  return res.status(202).json({
+    message: "Si un compte existe pour cet email, les instructions de reinitialisation seront envoyees."
+  });
 };

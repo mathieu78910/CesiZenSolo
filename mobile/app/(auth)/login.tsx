@@ -1,22 +1,23 @@
-import { auth } from "@back/cesizen-api";
+import { auth, getApiBaseUrl } from "@back/cesizen-api";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, useRouter } from "expo-router";
-import * as React from "react";
+import { useState } from "react";
 import { ActivityIndicator, Pressable, Text, TextInput, View } from "react-native";
-import { AuthScaffold } from "./AuthScaffold";
-import { authStyles as styles } from "./styles";
+import { useAuth } from "../../features/auth/AuthProvider";
+import AuthScaffold from "./AuthScaffold";
+import styles from "./styles";
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [emailAddress, setEmailAddress] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
+  const { setSession } = useAuth();
+  const [emailAddress, setEmailAddress] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const onSignInPress = React.useCallback(async () => {
+  const onSignInPress = async () => {
+    console.log("[AUTH][login] sign-in pressed");
     setErrorMessage(null);
-    setSuccessMessage(null);
 
     if (!emailAddress.trim() || !password.trim()) {
       setErrorMessage("Veuillez renseigner votre email et votre mot de passe.");
@@ -25,18 +26,28 @@ export default function LoginScreen() {
 
     try {
       setIsLoading(true);
-      await auth.login({
+      const response = await auth.login({
         email: emailAddress.trim(),
         password,
       });
-      setSuccessMessage("Connexion réussie.");
+      setSession({ accessToken: response.accessToken, user: response.user });
+      console.log("[AUTH][login] success");
+      router.replace("/(tabs)/articles");
+      return;
     } catch (err) {
       const message = err instanceof Error ? err.message : "Connexion impossible.";
-      setErrorMessage(message);
+      const invalidCredentialsMessage =
+        message === "Invalid credentials" ? "Email ou mot de passe incorrect." : message;
+      const networkMessage =
+        invalidCredentialsMessage === "Network request failed"
+          ? `Connexion impossible: API injoignable (${getApiBaseUrl()}).`
+          : invalidCredentialsMessage;
+      console.error("[AUTH][login] error", message, err);
+      setErrorMessage(networkMessage);
     } finally {
       setIsLoading(false);
     }
-  }, [emailAddress, password]);
+  }
 
   return (
     <AuthScaffold>
@@ -79,14 +90,7 @@ export default function LoginScreen() {
             />
           </View>
 
-          {!!successMessage && <Text style={styles.successText}>{successMessage}</Text>}
           {!!errorMessage && <Text style={styles.errorText}>{errorMessage}</Text>}
-
-          <View style={styles.formRow}>
-            <Pressable onPress={() => router.push("/(auth)/forgot-password")}>
-              <Text style={styles.secondaryLinkText}>Mot de passe oublié ?</Text>
-            </Pressable>
-          </View>
 
           <Pressable
             style={({ pressed }) => [
