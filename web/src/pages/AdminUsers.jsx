@@ -24,7 +24,6 @@ export default function AdminUsers() {
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
 
-  const token = getAccessToken();
   const currentUser = getAuthUser();
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil(total / limit)), [total, limit]);
@@ -33,7 +32,7 @@ export default function AdminUsers() {
     setIsLoading(true);
     setError("");
     try {
-      const data = await usersApi.listUsers({ page, limit, search: searchTerm, token });
+      const data = await usersApi.listUsers({ page, limit, search: searchTerm, token: getAccessToken() });
       setUsers(data.users || []);
       setTotal(data.total || 0);
       setPage(data.page || page);
@@ -95,7 +94,7 @@ export default function AdminUsers() {
           password: form.password,
           role: form.role
         };
-        await usersApi.createUser({ payload, token });
+        await usersApi.createUser({ payload, token: getAccessToken() });
         resetForm();
         await fetchUsers();
       } catch (err) {
@@ -122,9 +121,9 @@ export default function AdminUsers() {
     }
 
     try {
-      const response = await usersApi.updateUser({ userId: editingId, payload, token });
+      const response = await usersApi.updateUser({ userId: editingId, payload, token: getAccessToken() });
       if (currentUser?.userId === response?.user?.userId) {
-        saveAuth({ accessToken: token, user: response.user });
+        saveAuth({ accessToken: getAccessToken(), user: response.user });
       }
       resetForm();
       await fetchUsers();
@@ -137,7 +136,7 @@ export default function AdminUsers() {
     setError("");
     if (!window.confirm("Supprimer cet utilisateur ?")) return;
     try {
-      await usersApi.deleteUser({ userId, token });
+      await usersApi.deleteUser({ userId, token: getAccessToken() });
       await fetchUsers();
     } catch (err) {
       setError(err.message || "Suppression impossible");

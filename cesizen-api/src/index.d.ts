@@ -10,6 +10,9 @@ export interface ApiRequestOptions {
 export function setApiBaseUrl(url: string): void;
 export function getApiBaseUrl(): string;
 export function setAuthFailureHandler(handler: ((payload: { status: number; message: string; path: string }) => void) | null): void;
+export function setAccessTokenRefreshedHandler(
+  handler: ((payload: { accessToken: string; user: any }) => void) | null
+): void;
 export function apiRequest(path: string, options?: ApiRequestOptions): Promise<any>;
 
 export interface AuthPayload {
@@ -89,6 +92,7 @@ export namespace auth {
   function login(payload: AuthPayload): Promise<any>;
   function register(payload: AuthPayload): Promise<any>;
   function forgotPassword(payload: ForgotPasswordPayload): Promise<any>;
+  function refresh(): Promise<any>;
   function logout(): Promise<any>;
 }
 

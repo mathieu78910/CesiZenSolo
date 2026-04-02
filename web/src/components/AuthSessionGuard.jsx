@@ -1,13 +1,23 @@
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { setAuthFailureHandler } from "@back/cesizen-api";
-import { clearAuth } from "../utils/auth.js";
+import { setAccessTokenRefreshedHandler, setAuthFailureHandler } from "@back/cesizen-api";
+import { clearAuth, loadAuth, saveAuth } from "../utils/auth.js";
 
 export default function AuthSessionGuard() {
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
+    setAccessTokenRefreshedHandler(({ accessToken, user }) => {
+      const currentAuth = loadAuth();
+      if (!currentAuth) return;
+
+      saveAuth({
+        accessToken,
+        user: user ?? currentAuth.user
+      });
+    });
+
     setAuthFailureHandler(({ message }) => {
       clearAuth();
       if (location.pathname !== "/login") {
@@ -19,6 +29,7 @@ export default function AuthSessionGuard() {
     });
 
     return () => {
+      setAccessTokenRefreshedHandler(null);
       setAuthFailureHandler(null);
     };
   }, [location.pathname, navigate]);

@@ -1,4 +1,5 @@
 import bcrypt from "bcrypt";
+import { createHash } from "node:crypto";
 import { prisma } from "../utils/prisma.js";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../utils/jwt.js";
 
@@ -10,6 +11,26 @@ const ACCESS_USER_FIELDS = {
   lastName: true,
   role: true,
   isAnonymized: true
+};
+
+const hashRefreshToken = (refreshToken: string) =>
+  createHash("sha256").update(refreshToken).digest("hex");
+
+const buildTokenPayload = (user: { userId: number; role: string; email: string }) => ({
+  sub: user.userId,
+  role: user.role,
+  email: user.email
+});
+
+const issueTokens = async (user: { userId: number; role: string; email: string }) => {
+  const accessToken = signAccessToken(buildTokenPayload(user));
+  const refreshToken = signRefreshToken(buildTokenPayload(user));
+  await prisma.user.update({
+    where: { userId: user.userId },
+    data: { refreshTokenHash: hashRefreshToken(refreshToken) }
+  });
+
+  return { accessToken, refreshToken };
 };
 
 // Création d'un compte + tokens
@@ -38,18 +59,7 @@ export const registerUser = async (input: {
     select: ACCESS_USER_FIELDS
   });
 
-  const tokens = {
-    accessToken: signAccessToken({
-      sub: user.userId,
-      role: user.role,
-      email: user.email
-    }),
-    refreshToken: signRefreshToken({
-      sub: user.userId,
-      role: user.role,
-      email: user.email
-    })
-  };
+  const tokens = await issueTokens(user);
 
   return { user, tokens };
 };
@@ -61,6 +71,7 @@ export const loginUser = async (input: { email: string; password: string }) => {
     where: { email },
     select: {
       ...ACCESS_USER_FIELDS,
+      refreshTokenHash: true,
       passwordHash: true
     }
   });
@@ -78,18 +89,7 @@ export const loginUser = async (input: { email: string; password: string }) => {
   }
 
   const { passwordHash: _passwordHash, isAnonymized: _isAnonymized, ...publicUser } = user;
-  const tokens = {
-    accessToken: signAccessToken({
-      sub: publicUser.userId,
-      role: publicUser.role,
-      email: publicUser.email
-    }),
-    refreshToken: signRefreshToken({
-      sub: publicUser.userId,
-      role: publicUser.role,
-      email: publicUser.email
-    })
-  };
+  const tokens = await issueTokens(publicUser);
 
   return { user: publicUser, tokens };
 };
@@ -103,25 +103,33 @@ export const refreshTokens = async (refreshToken: string) => {
 
   const user = await prisma.user.findUnique({
     where: { userId: payload.sub },
-    select: ACCESS_USER_FIELDS
+    select: {
+      ...ACCESS_USER_FIELDS,
+      refreshTokenHash: true
+    }
   });
 
-  if (!user || user.isAnonymized) {
+  if (!user || user.isAnonymized || !user.refreshTokenHash) {
     throw new Error("INVALID_TOKEN");
   }
 
-  const tokens = {
-    accessToken: signAccessToken({
-      sub: user.userId,
-      role: user.role,
-      email: user.email
-    }),
-    refreshToken: signRefreshToken({
-      sub: user.userId,
-      role: user.role,
-      email: user.email
-    })
-  };
+  if (user.refreshTokenHash !== hashRefreshToken(refreshToken)) {
+    throw new Error("INVALID_TOKEN");
+  }
+
+  const tokens = await issueTokens(user);
 
   return { user, tokens };
+};
+
+export const revokeRefreshToken = async (refreshToken: string) => {
+  try {
+    const payload = verifyRefreshToken(refreshToken);
+    await prisma.user.update({
+      where: { userId: payload.sub },
+      data: { refreshTokenHash: null }
+    });
+  } catch {
+    // Logout must stay idempotent even with invalid/expired refresh token.
+  }
 };

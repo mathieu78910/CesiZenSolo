@@ -61,7 +61,6 @@ export default function AdminArticles() {
     () => window.innerWidth < 1320,
   );
 
-  const token = getAccessToken();
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(total / limit)),
     [total, limit],
@@ -76,7 +75,7 @@ export default function AdminArticles() {
         limit,
         search: searchTerm,
         resourceType: resourceTypeFilter || undefined,
-        token,
+        token: getAccessToken(),
       });
       setResources(data.resources || []);
       setTotal(data.total || 0);
@@ -150,7 +149,7 @@ export default function AdminArticles() {
 
     try {
       if (mode === "create") {
-        await resourcesApi.createResource({ payload, token });
+        await resourcesApi.createResource({ payload, token: getAccessToken() });
       } else {
         if (!editingId) {
           setError("Aucun article selectionne.");
@@ -159,7 +158,7 @@ export default function AdminArticles() {
         await resourcesApi.updateResource({
           resourceId: editingId,
           payload,
-          token,
+          token: getAccessToken(),
         });
       }
 
@@ -175,7 +174,7 @@ export default function AdminArticles() {
     if (!window.confirm("Supprimer cet article ?")) return;
 
     try {
-      await resourcesApi.deleteResource({ resourceId, token });
+      await resourcesApi.deleteResource({ resourceId, token: getAccessToken() });
       if (editingId === resourceId) {
         resetForm();
       }

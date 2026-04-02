@@ -4,7 +4,8 @@ const { authServiceMock } = vi.hoisted(() => ({
   authServiceMock: {
     registerUser: vi.fn(),
     loginUser: vi.fn(),
-    refreshTokens: vi.fn()
+    refreshTokens: vi.fn(),
+    revokeRefreshToken: vi.fn()
   }
 }));
 
@@ -75,4 +76,3 @@ describe("auth.controller", () => {
     expect(res.status).toHaveBeenCalledWith(202);
   });
 });
-

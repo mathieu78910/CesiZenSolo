@@ -4,7 +4,8 @@ const { prismaMock, bcryptMock, jwtUtilsMock } = vi.hoisted(() => ({
   prismaMock: {
     user: {
       findUnique: vi.fn(),
-      create: vi.fn()
+      create: vi.fn(),
+      update: vi.fn()
     }
   },
   bcryptMock: {
@@ -30,6 +31,7 @@ describe("auth.service", () => {
     bcryptMock.hash.mockResolvedValue("hashed");
     jwtUtilsMock.signAccessToken.mockReturnValue("access-token");
     jwtUtilsMock.signRefreshToken.mockReturnValue("refresh-token");
+    prismaMock.user.update.mockResolvedValue({});
   });
 
   it("registers a user", async () => {
@@ -51,6 +53,10 @@ describe("auth.service", () => {
     });
 
     expect(prismaMock.user.findUnique).toHaveBeenCalledWith({ where: { email: "test@user.fr" } });
+    expect(prismaMock.user.update).toHaveBeenCalledWith({
+      where: { userId: 1 },
+      data: { refreshTokenHash: expect.any(String) }
+    });
     expect(result.tokens.accessToken).toBe("access-token");
     expect(result.tokens.refreshToken).toBe("refresh-token");
   });
@@ -62,6 +68,7 @@ describe("auth.service", () => {
       firstName: "A",
       lastName: "B",
       role: "USER",
+      refreshTokenHash: null,
       isAnonymized: false,
       passwordHash: "hashed-db"
     });
@@ -75,12 +82,14 @@ describe("auth.service", () => {
 
   it("refreshes tokens with valid refresh token", async () => {
     jwtUtilsMock.verifyRefreshToken.mockReturnValueOnce({ sub: 9, role: "USER", email: "u@test.fr", typ: "refresh" });
+    const refreshTokenHash = "0eb17643d4e9261163783a420859c92c7d212fa9624106a12b510afbec266120";
     prismaMock.user.findUnique.mockResolvedValueOnce({
       userId: 9,
       email: "u@test.fr",
       firstName: "U",
       lastName: "T",
       role: "USER",
+      refreshTokenHash,
       isAnonymized: false
     });
 
@@ -89,4 +98,3 @@ describe("auth.service", () => {
     expect(result.tokens.refreshToken).toBe("refresh-token");
   });
 });
-

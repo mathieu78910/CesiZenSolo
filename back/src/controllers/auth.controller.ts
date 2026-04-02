@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { loginUser, refreshTokens, registerUser } from "../services/auth.service.js";
+import { loginUser, refreshTokens, registerUser, revokeRefreshToken } from "../services/auth.service.js";
 
 // Options cookies partagées pour le refresh token
 const buildCookieOptions = () => ({
@@ -109,7 +109,11 @@ export const refresh = async (req: Request, res: Response) => {
 };
 
 // Déconnexion (suppression du cookie)
-export const logout = async (_req: Request, res: Response) => {
+export const logout = async (req: Request, res: Response) => {
+  const refreshToken = req.cookies?.refresh_token;
+  if (refreshToken) {
+    await revokeRefreshToken(refreshToken);
+  }
   res.clearCookie("refresh_token", buildCookieOptions());
   return res.status(204).send();
 };

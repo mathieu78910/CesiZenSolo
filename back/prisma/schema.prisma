@@ -17,6 +17,7 @@ model User {
   lastName      String    @db.VarChar(50)               @map("last_name")
   email         String    @unique                       @db.VarChar(100)
   passwordHash  String    @db.VarChar(255)              @map("password_hash")
+  refreshTokenHash String? @db.VarChar(255)             @map("refresh_token_hash")
   signupDate    DateTime  @db.Date                      @map("signup_date")
   role          UserRole
   isAnonymized  Boolean   @default(false)               @map("is_anonymized")
