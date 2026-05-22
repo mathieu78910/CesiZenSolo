@@ -3,14 +3,14 @@ version: "3.9"
 services:
   db:
     image: postgres:16
-    container_name: cesizen-postgres
+    container_name: cesizen-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: cesizen
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

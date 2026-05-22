@@ -1,0 +1,23 @@
+{
+  "name": "@back/cesizen-api",
+  "version": "0.1.0",
+  "description": "Client API partage CesiZen (web + mobile)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./client": "./dist/client.js",
+    "./auth": "./dist/auth.js",
+    "./resources": "./dist/resources.js",
+    "./users": "./dist/users.js"
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "rm -rf dist && mkdir -p dist && cp src/index.js src/client.js src/auth.js src/exercises.js src/resources.js src/users.js src/index.d.ts dist/",
+    "prepublishOnly": "npm run build"
+  }
+}

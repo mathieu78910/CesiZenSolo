@@ -1,0 +1,301 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Space+Grotesk:wght@400;500;600&display=swap");
+
+.adminPage {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+}
+
+.pageHeader h1 {
+  margin: 6px 0 4px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 2.2rem;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.7rem;
+  color: rgba(26, 26, 26, 0.5);
+}
+
+.subtitle {
+  margin: 0;
+  max-width: 520px;
+  color: rgba(26, 26, 26, 0.6);
+}
+
+.headerActions {
+  display: flex;
+  gap: 12px;
+}
+
+.statCard {
+  background: rgba(255, 255, 255, 0.35);
+  padding: 12px 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 18px 50px rgba(20, 14, 5, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  backdrop-filter: url(#distorsion);
+  -webkit-backdrop-filter: url(#distorsion);
+  display: flex;
+  flex-direction: column;
+  min-width: 110px;
+  position: relative;
+  overflow: hidden;
+}
+
+.statCard::before,
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.statCard span {
+  font-size: 0.8rem;
+  color: rgba(26, 26, 26, 0.55);
+}
+
+.statCard strong {
+  font-size: 1.4rem;
+}
+
+.panelGrid {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) 1fr;
+  gap: 24px;
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 20px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 18px 50px rgba(20, 14, 5, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  backdrop-filter: url(#distorsion);
+  -webkit-backdrop-filter: url(#distorsion);
+  position: relative;
+  overflow: hidden;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.panelHeader h2 {
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+  position: relative;
+  z-index: 1;
+}
+
+.form {
+  display: grid;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+}
+
+.form input,
+.form select,
+.controls input,
+.controls select {
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.95rem;
+  color: #1f1914;
+  background: rgba(255, 250, 244, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 8px 20px rgba(20, 14, 5, 0.04);
+}
+
+.form input:focus,
+.form select:focus,
+.controls input:focus,
+.controls select:focus {
+  outline: 2px solid rgba(30, 109, 83, 0.16);
+  border-color: rgba(30, 109, 83, 0.34);
+}
+
+.primaryButton {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(120deg, #1e6d53, #2d8b68);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.primaryButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(45, 139, 104, 0.35);
+}
+
+.ghostButton {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.22);
+  cursor: pointer;
+  font-size: 0.85rem;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.error {
+  margin: 0;
+  color: #c0352b;
+  font-weight: 600;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 1;
+}
+
+.tableWrapper {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.26);
+  box-shadow: 0 18px 50px rgba(20, 14, 5, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  backdrop-filter: url(#distorsion);
+  -webkit-backdrop-filter: url(#distorsion);
+  position: relative;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(26, 26, 26, 0.06);
+}
+
+.table th {
+  background: rgba(255, 255, 255, 0.42);
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions button {
+  border: none;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.42);
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.actions .danger {
+  background: rgba(192, 53, 43, 0.18);
+  color: #801c14;
+}
+
+.badgeAdmin,
+.badgeUser {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.badgeAdmin {
+  background: rgba(240, 109, 63, 0.16);
+  color: #d15024;
+}
+
+.badgeUser {
+  background: rgba(30, 109, 83, 0.14);
+  color: #1e6d53;
+}
+
+.emptyState {
+  padding: 24px;
+  text-align: center;
+  color: rgba(26, 26, 26, 0.5);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.pagination button {
+  border: none;
+  background: rgba(255, 255, 255, 0.76);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  border: 1px solid #d4ccc2;
+}
+
+@media (max-width: 1100px) {
+  .panelGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 700px) {
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .controls {
+    flex-wrap: wrap;
+  }
+}

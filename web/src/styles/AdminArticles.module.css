@@ -1,0 +1,423 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&family=Space+Grotesk:wght@400;500;600&display=swap");
+
+.adminPage {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 24px;
+}
+
+.pageHeader h1 {
+  margin: 6px 0 4px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 2.2rem;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.7rem;
+  color: rgba(26, 26, 26, 0.5);
+}
+
+.subtitle {
+  margin: 0;
+  max-width: 520px;
+  color: rgba(26, 26, 26, 0.6);
+}
+
+.headerActions {
+  display: flex;
+  gap: 12px;
+}
+
+.statCard {
+  background: rgba(255, 255, 255, 0.35);
+  padding: 12px 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 18px 50px rgba(20, 14, 5, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  backdrop-filter: url(#distorsion);
+  -webkit-backdrop-filter: url(#distorsion);
+  display: flex;
+  flex-direction: column;
+  min-width: 110px;
+  position: relative;
+  overflow: hidden;
+}
+
+.statCard::before,
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0));
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+.statCard span {
+  font-size: 0.8rem;
+  color: rgba(26, 26, 26, 0.55);
+}
+
+.statCard strong {
+  font-size: 1.4rem;
+}
+
+.panelGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 20px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 18px 50px rgba(20, 14, 5, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  backdrop-filter: url(#distorsion);
+  -webkit-backdrop-filter: url(#distorsion);
+  position: relative;
+  overflow: hidden;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.panelHeader h2 {
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+  position: relative;
+  z-index: 1;
+}
+
+.form {
+  display: grid;
+  gap: 18px;
+  position: relative;
+  z-index: 1;
+}
+
+.formIntro {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.formLead {
+  margin: 0;
+  color: rgba(31, 25, 20, 0.72);
+  max-width: 760px;
+  line-height: 1.6;
+}
+
+.formHints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hintChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.56);
+  border: 1px solid rgba(212, 204, 194, 0.7);
+  font-size: 0.78rem;
+  color: #5a4c41;
+}
+
+.fieldGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(220px, 1fr) minmax(260px, 1.2fr);
+  gap: 14px;
+  align-items: end;
+}
+
+.fieldSpanTwo {
+  grid-column: span 1;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.form input,
+.form select,
+.form textarea,
+.controls input,
+.controls select {
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.95rem;
+  color: #1f1914;
+  background: rgba(255, 250, 244, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 8px 20px rgba(20, 14, 5, 0.04);
+}
+
+.form input:focus,
+.form select:focus,
+.form textarea:focus,
+.controls input:focus,
+.controls select:focus {
+  outline: 2px solid rgba(212, 106, 45, 0.16);
+  border-color: rgba(212, 106, 45, 0.34);
+}
+
+.form textarea {
+  resize: vertical;
+  min-height: 220px;
+}
+
+.editorWrap {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  background: rgba(255, 250, 244, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 8px 20px rgba(20, 14, 5, 0.04);
+}
+
+.editorField {
+  gap: 12px !important;
+}
+
+.editorHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.editorHelp {
+  margin: 4px 0 0;
+  color: rgba(31, 25, 20, 0.58);
+  line-height: 1.5;
+  max-width: 760px;
+}
+
+.primaryButton {
+  border: none;
+  border-radius: 12px;
+  padding: 14px 20px;
+  background: linear-gradient(120deg, #9b4d24, #d46a2d);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-width: 220px;
+}
+
+.primaryButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(212, 106, 45, 0.35);
+}
+
+.ghostButton {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.22);
+  cursor: pointer;
+  font-size: 0.85rem;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.error {
+  margin: 0;
+  color: #c0352b;
+  font-weight: 600;
+}
+
+.formActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+.tableWrapper {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.26);
+  box-shadow: 0 18px 50px rgba(20, 14, 5, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  backdrop-filter: url(#distorsion);
+  -webkit-backdrop-filter: url(#distorsion);
+  position: relative;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(26, 26, 26, 0.06);
+  vertical-align: top;
+}
+
+.table th {
+  background: rgba(255, 255, 255, 0.42);
+  font-weight: 600;
+}
+
+.preview {
+  margin: 6px 0 0;
+  color: rgba(26, 26, 26, 0.6);
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.actions button {
+  border: none;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.42);
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+.danger {
+  background: rgba(192, 53, 43, 0.18) !important;
+  color: #801c14;
+}
+
+.badgeType {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(155, 77, 36, 0.12);
+  color: #9b4d24;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.categoryList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.categoryChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(30, 109, 83, 0.14);
+  color: #1e6d53;
+  font-size: 0.75rem;
+}
+
+.emptyState {
+  padding: 24px;
+  text-align: center;
+  color: rgba(26, 26, 26, 0.5);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.pagination button {
+  border: none;
+  background: rgba(255, 255, 255, 0.76);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  border: 1px solid #d4ccc2;
+}
+
+@media (max-width: 1100px) {
+  .headerActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .fieldGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .fieldSpanTwo {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 700px) {
+  .pageHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .fieldGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .fieldSpanTwo {
+    grid-column: auto;
+  }
+
+  .editorHeader {
+    align-items: flex-start;
+  }
+
+  .formActions {
+    justify-content: stretch;
+  }
+
+  .primaryButton {
+    width: 100%;
+    min-width: 0;
+  }
+}
