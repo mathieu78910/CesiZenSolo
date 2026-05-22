@@ -120,7 +120,6 @@ export default function BreathingScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Exercice de respiration</Text>
-      <Text style={styles.subtitle}>Presets recuperes depuis le backend. L'exercice est accessible meme sans compte.</Text>
 
       <View style={styles.section}>
         <Text style={styles.label}>Preset actuel: {presetKey}</Text>
