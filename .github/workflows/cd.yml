@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: Récupérer le code testé par le CI
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # On checkout exactement le commit que le CI vient de valider,
           # pas le HEAD courant de main (qui pourrait avoir changé entre-temps).
@@ -50,7 +50,7 @@ jobs:
       # ── Image API (backend) ────────────────────────────────────
       - name: Métadonnées de l'image API
         id: meta-api
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.IMAGE_API }}
           tags: |
@@ -59,7 +59,7 @@ jobs:
             type=raw,value=latest
 
       - name: Build & Push image API
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./back
           file: ./back/Dockerfile
@@ -70,7 +70,7 @@ jobs:
       # ── Image Web (frontend) ───────────────────────────────────
       - name: Métadonnées de l'image Web
         id: meta-web
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.IMAGE_WEB }}
           tags: |
@@ -79,7 +79,7 @@ jobs:
             type=raw,value=latest
 
       - name: Build & Push image Web
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./web/Dockerfile
@@ -121,7 +121,7 @@ jobs:
           ENDSSH
 
       - name: Créer un tag de release
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fullSha = context.payload.workflow_run.head_sha;
