@@ -50,7 +50,7 @@ jobs:
       # ── Image API (backend) ────────────────────────────────────
       - name: Métadonnées de l'image API
         id: meta-api
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.IMAGE_API }}
           tags: |
@@ -70,7 +70,7 @@ jobs:
       # ── Image Web (frontend) ───────────────────────────────────
       - name: Métadonnées de l'image Web
         id: meta-web
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ env.IMAGE_WEB }}
           tags: |
