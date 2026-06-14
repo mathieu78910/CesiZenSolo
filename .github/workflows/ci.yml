@@ -1,0 +1,75 @@
+name: CI — Intégration Continue
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # ──────────────────────────────────────────────────────────────
+  # Job 1 : Tests & vérification de type du backend (Node/TypeScript)
+  # ──────────────────────────────────────────────────────────────
+  test-api:
+    name: API — Tests & TypeCheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Configurer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: back/package-lock.json
+
+      - name: Installer les dépendances
+        run: npm ci
+        working-directory: back
+
+      - name: Générer le client Prisma
+        run: npx prisma generate
+        working-directory: back
+
+      - name: Vérification des types TypeScript
+        run: npm run typecheck
+        working-directory: back
+
+      - name: Lancer les tests unitaires
+        run: npm test
+        working-directory: back
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 2 : Build de vérification du frontend (React/Vite)
+  # ──────────────────────────────────────────────────────────────
+  build-web:
+    name: Web — Build de vérification
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Configurer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: web/package-lock.json
+
+      - name: Installer le client API partagé
+        run: npm ci
+        working-directory: cesizen-api
+
+      - name: Installer les dépendances frontend
+        run: npm ci
+        working-directory: web
+
+      - name: Compiler le frontend
+        run: npm run build
+        working-directory: web
+        env:
+          # URL de l'API en staging (pas d'URL de prod exposée en CI)
+          VITE_API_URL: https://cesizen-staging.example.com

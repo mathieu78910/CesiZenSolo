@@ -1,0 +1,58 @@
+version: 2
+
+updates:
+  # ─── Backend (Node.js / Prisma) ────────────────────────────────────────────
+  - package-ecosystem: "npm"
+    directory: "/back"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "backend"
+
+  # ─── Frontend (React / Vite) ───────────────────────────────────────────────
+  - package-ecosystem: "npm"
+    directory: "/web"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "frontend"
+
+  # ─── Client API partagé ────────────────────────────────────────────────────
+  - package-ecosystem: "npm"
+    directory: "/cesizen-api"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+
+  # ─── Images Docker (backend) ───────────────────────────────────────────────
+  - package-ecosystem: "docker"
+    directory: "/back"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  # ─── Images Docker (frontend) ──────────────────────────────────────────────
+  - package-ecosystem: "docker"
+    directory: "/web"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+      - "docker"
+
+  # ─── GitHub Actions ─────────────────────────────────────────────────────────
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+      - "ci"
