@@ -15,7 +15,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.17.0",
     "three": "^0.160.0",
-    "tinymce": "^8.4.0"
+    "tinymce": "^8.6.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.1.0",
