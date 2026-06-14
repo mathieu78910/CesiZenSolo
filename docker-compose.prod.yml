@@ -8,7 +8,7 @@ name: cesizen-prod
 
 services:
   traefik:
-    image: traefik:v3.3
+    image: traefik:v3.7
     container_name: cesizen-traefik
     restart: unless-stopped
     command:
