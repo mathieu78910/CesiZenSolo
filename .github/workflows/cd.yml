@@ -34,7 +34,7 @@ jobs:
 
     steps:
       - name: Récupérer le code testé par le CI
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           # On checkout exactement le commit que le CI vient de valider,
           # pas le HEAD courant de main (qui pourrait avoir changé entre-temps).
