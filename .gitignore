@@ -1,12 +1,31 @@
-# Node
+# ─── Dépendances ──────────────────────────────────────────────────────────────
 node_modules/
 **/node_modules/
 
-# Env
+# ─── Build outputs ────────────────────────────────────────────────────────────
+**/dist/
+**/build/
+web/dist/
+
+# ─── Fichiers d'environnement — JAMAIS committer les secrets ──────────────────
 **/.env
 **/.env.local
 **/.env.*.local
+.env.prod
 
-# OS
+# ─── OS & IDE ─────────────────────────────────────────────────────────────────
 .DS_Store
+**/.DS_Store
+Thumbs.db
+.vscode/
+.idea/
 
+# ─── Logs ─────────────────────────────────────────────────────────────────────
+**/*.log
+**/logs/
+
+# ─── Tests & Coverage ─────────────────────────────────────────────────────────
+**/coverage/
+
+# ─── Expo / React Native ──────────────────────────────────────────────────────
+mobile/.expo/

@@ -1,0 +1,122 @@
+name: CD — Déploiement Continu
+
+on:
+  push:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  # Les noms d'images sont en minuscules (contrainte Docker)
+  IMAGE_API: ghcr.io/${{ github.repository_owner }}/cesizen-api
+  IMAGE_WEB: ghcr.io/${{ github.repository_owner }}/cesizen-web
+
+jobs:
+  # ──────────────────────────────────────────────────────────────
+  # Job 1 : Build & Push des images Docker sur ghcr.io
+  # ──────────────────────────────────────────────────────────────
+  build-and-push:
+    name: Build & Push images Docker
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write  # nécessaire pour pousser sur ghcr.io
+
+    outputs:
+      image-tag: ${{ steps.meta-api.outputs.version }}
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Se connecter au GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── Image API (backend) ────────────────────────────────────
+      - name: Métadonnées de l'image API
+        id: meta-api
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_API }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha,prefix=sha-
+            type=raw,value=latest
+
+      - name: Build & Push image API
+        uses: docker/build-push-action@v6
+        with:
+          context: ./back
+          file: ./back/Dockerfile
+          push: true
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+
+      # ── Image Web (frontend) ───────────────────────────────────
+      - name: Métadonnées de l'image Web
+        id: meta-web
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE_WEB }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha,prefix=sha-
+            type=raw,value=latest
+
+      - name: Build & Push image Web
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./web/Dockerfile
+          push: true
+          tags: ${{ steps.meta-web.outputs.tags }}
+          labels: ${{ steps.meta-web.outputs.labels }}
+          build-args: |
+            VITE_API_URL=https://${{ secrets.DOMAIN }}
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 2 : Déploiement SSH sur le serveur de production
+  # Secrets requis : SSH_PRIVATE_KEY, SSH_HOST, SSH_USER, DOMAIN
+  # ──────────────────────────────────────────────────────────────
+  deploy:
+    name: Déployer sur le serveur de production
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Déployer via SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+          ssh "$SSH_USER@$SSH_HOST" << 'ENDSSH'
+            cd /opt/cesizen
+            git pull
+            docker compose -f docker-compose.prod.yml --env-file .env.prod pull
+            docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --remove-orphans
+            docker image prune -f
+          ENDSSH
+
+      - name: Créer un tag de release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sha = context.sha.substring(0, 7);
+            const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+            const tagName = `v1.0.0-${date}-${sha}`;
+            await github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/${tagName}`,
+              sha: context.sha,
+            });
+            console.log(`Tag créé : ${tagName}`);
