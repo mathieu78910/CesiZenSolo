@@ -121,7 +121,7 @@ jobs:
           ENDSSH
 
       - name: Créer un tag de release
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fullSha = context.payload.workflow_run.head_sha;
