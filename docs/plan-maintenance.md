@@ -18,10 +18,12 @@ Toute demande, bug ou amélioration est tracée via **GitHub Issues** sur le dé
 | Label | Couleur | Usage |
 |---|---|---|
 | `bug` | Rouge `#d73a4a` | Dysfonctionnement constaté |
-| `critical` | Noir `#000000` | Incident bloquant en production |
+| `critical` | Noir `#000000` | Incident bloquant en production (P1) |
 | `enhancement` | Bleu `#a2eeef` | Nouvelle fonctionnalité ou amélioration |
 | `question` | Rose `#d876e3` | Demande d'information ou de clarification |
 | `documentation` | Beige `#d9e0e8` | Mise à jour de la documentation |
+| `dependencies` | Bleu clair `#0366d6` | Mise à jour de dépendance (générée par Dependabot, cf. [veille technologique](veille-technologique.md)) |
+| `backend` / `frontend` / `docker` / `ci` | Violet `#5319e7` | Périmètre technique concerné |
 | `in-progress` | Jaune `#fbca04` | En cours de traitement |
 | `wontfix` | Blanc `#ffffff` | Hors périmètre ou décision de ne pas corriger |
 
@@ -30,11 +32,20 @@ Toute demande, bug ou amélioration est tracée via **GitHub Issues** sur le dé
 - **Bug report** : `.github/ISSUE_TEMPLATE/bug_report.md`
 - **Feature request** : `.github/ISSUE_TEMPLATE/feature_request.md`
 
-### 2.3 Tableau de bord
+### 2.3 Tableau de bord — GitHub Projects
 
-- **GitHub Issues** : suivi temps réel de tous les tickets ouverts
-- **GitHub Projects** : tableau Kanban (Backlog → En cours → En revue → Terminé)
-- Lien : `https://github.com/<utilisateur>/CesiZenSolo/issues`
+Un tableau **Kanban** (GitHub Projects) centralise tous les tickets, qu'ils viennent du client (bugs/évolutions) ou de la veille automatisée (Dependabot).
+
+```
+┌──────────┐   ┌─────────────────┐   ┌──────────┐
+│  Todo    │ → │  In Progress     │ → │  Done    │
+│ (triage, │   │  (en cours de    │   │ (livré,  │
+│ backlog) │   │  développement)  │   │  fermé)  │
+└──────────┘   └─────────────────┘   └──────────┘
+```
+
+- **Issues** : https://github.com/mathieu78910/CesiZenSolo/issues
+- **Project** : https://github.com/users/mathieu78910/projects/2
 
 ---
 
@@ -118,19 +129,67 @@ Si le problème ne peut être résolu en moins d'une heure (P1) :
 
 ---
 
-## 5. Maintenance planifiée
+## 5. Gestion des évolutions — méthodologie prestataire / client
+
+Contrairement aux **corrections** (bugs, traités en urgence selon les SLA de la section 3), les **évolutions** (nouvelles fonctionnalités) suivent un cycle de validation avec le client.
+
+### 5.1 Cycle de vie d'une demande d'évolution
+
+```
+1. EXPRESSION DU BESOIN (Client)
+   └── Le client (ou un utilisateur) crée un GitHub Issue
+       avec le template "feature_request", label `enhancement`
+              │
+              ▼
+2. QUALIFICATION (Prestataire)
+   └── Le prestataire évalue : faisabilité, charge estimée, impact
+       → Discussion dans les commentaires de l'Issue
+              │
+              ▼
+3. PRIORISATION (Client + Prestataire)
+   └── L'Issue est placée dans le GitHub Project, colonne "Todo"
+       (validée et priorisée pour le prochain cycle)
+              │
+              ▼
+4. DÉVELOPPEMENT (Prestataire)
+   └── Création d'une branche feature/<nom-issue>
+       → Référencer l'Issue dans les commits : "feat: ... (#12)"
+       → L'Issue passe en "In Progress", label `in-progress`
+              │
+              ▼
+5. VALIDATION (Prestataire + Client)
+   └── Pull Request vers develop → CI exécuté automatiquement
+       → Revue de code + recette fonctionnelle par le client
+              │
+              ▼
+6. LIVRAISON (Automatique)
+   └── Merge sur main → déploiement CD automatique
+       → L'Issue passe en "Done" et est fermée
+       → Le client est notifié via la fermeture de l'Issue (commentaire de clôture)
+```
+
+### 5.2 Traçabilité
+
+Chaque évolution livrée est traçable de bout en bout :
+- **Issue GitHub** (besoin exprimé) ↔ **Pull Request** (code) ↔ **Commit** (référence `#numéro`) ↔ **Tag de release** (déploiement, cf. `plan-deploiement.md`)
+
+Cela permet de répondre à tout moment à la question : *"Dans quelle version cette demande a-t-elle été livrée ?"*
+
+---
+
+## 6. Maintenance planifiée
 
 | Fréquence | Action |
 |---|---|
 | **Hebdomadaire** | Vérification des logs d'erreur, état des conteneurs |
-| **Mensuelle** | Mise à jour des dépendances npm (`npm audit`, `npm update`) |
+| **Hebdomadaire** | Revue des PR Dependabot ouvertes (cf. [veille technologique](veille-technologique.md)) |
 | **Mensuelle** | Vérification du renouvellement des certificats Let's Encrypt |
 | **Trimestrielle** | Mise à jour des images Docker de base (Node, Nginx, Postgres) |
 | **Avant chaque release** | Exécution complète des tests CI, revue des PR ouvertes |
 
 ---
 
-## 6. Sauvegardes
+## 7. Sauvegardes
 
 | Élément | Fréquence | Méthode |
 |---|---|---|
@@ -144,7 +203,7 @@ docker exec cesizen-db pg_dump -U $POSTGRES_USER $POSTGRES_DB > backup_$(date +%
 
 ---
 
-## 7. Contacts et responsabilités
+## 8. Contacts et responsabilités
 
 | Rôle | Responsabilité |
 |---|---|
