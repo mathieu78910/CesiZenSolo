@@ -59,7 +59,7 @@ jobs:
             type=raw,value=latest
 
       - name: Build & Push image API
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: ./back
           file: ./back/Dockerfile
@@ -79,7 +79,7 @@ jobs:
             type=raw,value=latest
 
       - name: Build & Push image Web
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./web/Dockerfile
