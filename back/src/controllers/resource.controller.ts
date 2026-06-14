@@ -17,7 +17,7 @@ import {
 } from "../validators/resource.validator.js";
 
 function parseResourceId(req: Request, res: Response) {
-  const resourceId = Number.parseInt(req.params.resourceId, 10);
+  const resourceId = Number.parseInt(String(req.params.resourceId), 10);
   if (Number.isNaN(resourceId)) {
     res.status(400).json({ message: "resourceId invalide" });
     return null;
