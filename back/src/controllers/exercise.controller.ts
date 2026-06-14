@@ -7,7 +7,7 @@ export async function listExercises(_req: Request, res: Response) {
 }
 
 export async function createPractice(req: Request, res: Response) {
-  const exerciseId = Number.parseInt(req.params.exerciseId, 10);
+  const exerciseId = Number.parseInt(String(req.params.exerciseId), 10);
   const durationCompleted = Number(req.body?.durationCompleted);
 
   if (Number.isNaN(exerciseId)) {

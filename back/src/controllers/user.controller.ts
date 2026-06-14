@@ -29,7 +29,7 @@ function resolveTargetUserId(req, res) {
   }
 
   if (req.params?.userId) {
-    const paramUserId = Number.parseInt(req.params.userId, 10);
+    const paramUserId = Number.parseInt(String(req.params.userId), 10);
     if (Number.isNaN(paramUserId)) {
       res.status(400).json({ message: "userId invalide" });
       return null;
@@ -51,7 +51,7 @@ function resolveTargetUserId(req, res) {
 //   - Mappe les erreurs vers un HTTP status
 async function getUserById(req, res) {
   // Validation du paramètre
-  const userId = Number.parseInt(req.params.userId, 10);
+  const userId = Number.parseInt(String(req.params.userId), 10);
   if (Number.isNaN(userId)) {
     return res.status(400).json({ message: "userId invalide" });
   }
@@ -156,7 +156,7 @@ async function createUser(req, res) {
 //   - Hash du mot de passe si fourni
 async function updateUser(req, res) {
   // Validation du paramètre
-  const userId = Number.parseInt(req.params.userId, 10);
+  const userId = Number.parseInt(String(req.params.userId), 10);
   if (Number.isNaN(userId)) {
     return res.status(400).json({ message: "userId invalide" });
   }
@@ -223,7 +223,7 @@ async function updateCurrentUser(req, res) {
 //   - Supprime l'utilisateur par ID
 async function deleteUser(req, res) {
   // Validation du paramètre
-  const userId = Number.parseInt(req.params.userId, 10);
+  const userId = Number.parseInt(String(req.params.userId), 10);
   if (Number.isNaN(userId)) {
     return res.status(400).json({ message: "userId invalide" });
   }
