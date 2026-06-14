@@ -87,7 +87,9 @@ Internet
 GitHub Actions (CI/CD)
     │
     ├── CI (ci.yml) : push/PR → tests → typecheck → build web
-    └── CD (cd.yml) : push main → build images → push GHCR → SSH deploy
+    └── CD (cd.yml) : déclenché par la fin du CI sur main, uniquement
+                       si conclusion == success → build images → push GHCR
+                       → SSH deploy
 ```
 
 **Routage Traefik :**
@@ -115,11 +117,16 @@ Déclenché sur chaque **push** et **pull request** vers `main` ou `develop`.
 
 ### 4.2 Pipeline CD — `.github/workflows/cd.yml`
 
-Déclenché uniquement sur **push vers `main`**.
+Déclenché par l'événement `workflow_run` à la fin du pipeline CI sur `main`.
+Le job `build-and-push` ne s'exécute **que si** `github.event.workflow_run.conclusion == 'success'` :
+si le typecheck, les tests ou le build web échouent dans le CI, le CD ne se lance pas et **rien n'est déployé**.
+
+Le code construit et déployé est celui du commit exact validé par le CI
+(`ref: github.event.workflow_run.head_sha`), pas le HEAD courant de `main`.
 
 | Étape            | Description                                               |
 | ---------------- | --------------------------------------------------------- |
-| Checkout         | Récupération du code source                               |
+| Checkout         | Récupération du commit validé par le CI                    |
 | Login GHCR       | Authentification sur ghcr.io via `GITHUB_TOKEN`           |
 | Build & Push API | Construction et push de l'image backend                   |
 | Build & Push Web | Construction et push de l'image frontend                  |
