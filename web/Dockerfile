@@ -1,8 +1,11 @@
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Copy shared API client (local file: dependency)
+# Copy shared API client (local file: dependency) and build it.
+# Note: cesizen-api/dist is excluded from the build context by .dockerignore
+# (**/dist/), so it must be regenerated here from src/.
 COPY cesizen-api/ ./cesizen-api/
+RUN npm run build --prefix cesizen-api
 
 # Install web dependencies
 COPY web/package.json web/package-lock.json ./web/
