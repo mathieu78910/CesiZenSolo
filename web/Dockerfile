@@ -18,11 +18,19 @@ COPY web/index.html ./
 COPY web/vite.config.js ./
 
 # VITE_API_URL is embedded at build time by Vite
-ARG VITE_API_URL=https://cesizen.mathieu-monnie.switzerlandnorth.cloudapp.azure.com
+ARG VITE_API_URL=https://cesizen-mathieu-monnie.switzerlandnorth.cloudapp.azure.com
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
 FROM nginx:alpine
+
+# Applique les correctifs de sécurité Alpine (ex: OpenSSL, libxml2) non encore
+# présents dans l'image de base au moment de sa publication.
+RUN apk upgrade --no-cache
+
 COPY --from=builder /app/web/dist /usr/share/nginx/html
 COPY web/nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:80/ || exit 1

@@ -156,3 +156,86 @@ jobs:
         env:
           # URL de l'API en staging (pas d'URL de prod exposée en CI)
           VITE_API_URL: https://cesizen-staging.example.com
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 3 : Audit de sécurité des images Docker (Trivy)
+  # ──────────────────────────────────────────────────────────────
+  docker-audit:
+    name: Audit Docker — Trivy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v6
+
+      - name: Builder l'image API
+        uses: docker/build-push-action@v7
+        with:
+          context: ./back
+          file: ./back/Dockerfile
+          push: false
+          load: true
+          tags: cesizen-api:audit
+
+      - name: Builder l'image Web
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./web/Dockerfile
+          push: false
+          load: true
+          tags: cesizen-web:audit
+          build-args: |
+            VITE_API_URL=https://cesizen-staging.example.com
+
+      - name: Scanner l'image API (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: cesizen-api:audit
+          format: json
+          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+          output: trivy-api.json
+
+      - name: Scanner l'image Web (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: cesizen-web:audit
+          format: json
+          severity: 'LOW,MEDIUM,HIGH,CRITICAL'
+          output: trivy-web.json
+
+      - name: Analyser les résultats et bloquer si high/critical
+        run: |
+          BLOCK=0
+
+          for IMAGE in "API:trivy-api.json" "Web:trivy-web.json"; do
+            NAME="${IMAGE%%:*}"
+            FILE="${IMAGE##*:}"
+
+            CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="CRITICAL")] | length' "$FILE")
+            HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="HIGH")] | length' "$FILE")
+            MEDIUM=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="MEDIUM")] | length' "$FILE")
+            LOW=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity=="LOW")] | length' "$FILE")
+
+            {
+              echo "### 🛡️ Audit Docker (Trivy) — $NAME"
+              echo ""
+              echo "| Sévérité | Nombre |"
+              echo "|---|---|"
+              echo "| 🔴 Critical | $CRITICAL |"
+              echo "| 🟠 High | $HIGH |"
+              echo "| 🟡 Medium | $MEDIUM |"
+              echo "| 🟢 Low | $LOW |"
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            echo "$NAME — 🔴 Critical: $CRITICAL  🟠 High: $HIGH  🟡 Medium: $MEDIUM  🟢 Low: $LOW"
+
+            if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+              BLOCK=1
+            fi
+          done
+
+          if [ "$BLOCK" -eq 1 ]; then
+            echo "::error::Vulnérabilité(s) high/critical détectée(s) dans une image Docker — build bloqué (Trivy)"
+            exit 1
+          fi
