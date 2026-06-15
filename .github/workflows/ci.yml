@@ -31,8 +31,10 @@ jobs:
 
       - name: Audit de sécurité (npm audit)
         working-directory: back
+        # --omit=dev : on n'audite que les dépendances de production
+        # (devDependencies = outillage de build, non livré).
         run: |
-          AUDIT=$(npm audit --json || true)
+          AUDIT=$(npm audit --omit=dev --json || true)
           CRITICAL=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.critical')
           HIGH=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.high')
           MODERATE=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.moderate')
@@ -93,7 +95,7 @@ jobs:
       - name: Audit de sécurité (npm audit) — cesizen-api
         working-directory: cesizen-api
         run: |
-          AUDIT=$(npm audit --json || true)
+          AUDIT=$(npm audit --omit=dev --json || true)
           CRITICAL=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.critical')
           HIGH=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.high')
           MODERATE=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.moderate')
@@ -124,7 +126,7 @@ jobs:
       - name: Audit de sécurité (npm audit) — web
         working-directory: web
         run: |
-          AUDIT=$(npm audit --json || true)
+          AUDIT=$(npm audit --omit=dev --json || true)
           CRITICAL=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.critical')
           HIGH=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.high')
           MODERATE=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.moderate')
