@@ -29,6 +29,33 @@ jobs:
         run: npm ci
         working-directory: back
 
+      - name: Audit de sécurité (npm audit)
+        working-directory: back
+        run: |
+          AUDIT=$(npm audit --json || true)
+          CRITICAL=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.critical')
+          HIGH=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.high')
+          MODERATE=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.moderate')
+          LOW=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.low')
+
+          {
+            echo "### 🛡️ Audit de sécurité — back"
+            echo ""
+            echo "| Sévérité | Nombre |"
+            echo "|---|---|"
+            echo "| 🔴 Critical | $CRITICAL |"
+            echo "| 🟠 High | $HIGH |"
+            echo "| 🟡 Moderate | $MODERATE |"
+            echo "| 🟢 Low | $LOW |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "🔴 Critical: $CRITICAL  🟠 High: $HIGH  🟡 Moderate: $MODERATE  🟢 Low: $LOW"
+
+          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+            echo "::error::Vulnérabilité(s) high/critical détectée(s) — build bloqué (npm audit)"
+            exit 1
+          fi
+
       - name: Générer le client Prisma
         run: npx prisma generate
         working-directory: back
@@ -63,9 +90,63 @@ jobs:
         run: npm ci
         working-directory: cesizen-api
 
+      - name: Audit de sécurité (npm audit) — cesizen-api
+        working-directory: cesizen-api
+        run: |
+          AUDIT=$(npm audit --json || true)
+          CRITICAL=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.critical')
+          HIGH=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.high')
+          MODERATE=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.moderate')
+          LOW=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.low')
+
+          {
+            echo "### 🛡️ Audit de sécurité — cesizen-api"
+            echo ""
+            echo "| Sévérité | Nombre |"
+            echo "|---|---|"
+            echo "| 🔴 Critical | $CRITICAL |"
+            echo "| 🟠 High | $HIGH |"
+            echo "| 🟡 Moderate | $MODERATE |"
+            echo "| 🟢 Low | $LOW |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "🔴 Critical: $CRITICAL  🟠 High: $HIGH  🟡 Moderate: $MODERATE  🟢 Low: $LOW"
+
+          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+            echo "::error::Vulnérabilité(s) high/critical détectée(s) — build bloqué (npm audit)"
+            exit 1
+          fi
+
       - name: Installer les dépendances frontend
         run: npm ci
         working-directory: web
+
+      - name: Audit de sécurité (npm audit) — web
+        working-directory: web
+        run: |
+          AUDIT=$(npm audit --json || true)
+          CRITICAL=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.critical')
+          HIGH=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.high')
+          MODERATE=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.moderate')
+          LOW=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.low')
+
+          {
+            echo "### 🛡️ Audit de sécurité — web"
+            echo ""
+            echo "| Sévérité | Nombre |"
+            echo "|---|---|"
+            echo "| 🔴 Critical | $CRITICAL |"
+            echo "| 🟠 High | $HIGH |"
+            echo "| 🟡 Moderate | $MODERATE |"
+            echo "| 🟢 Low | $LOW |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          echo "🔴 Critical: $CRITICAL  🟠 High: $HIGH  🟡 Moderate: $MODERATE  🟢 Low: $LOW"
+
+          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
+            echo "::error::Vulnérabilité(s) high/critical détectée(s) — build bloqué (npm audit)"
+            exit 1
+          fi
 
       - name: Compiler le frontend
         run: npm run build
