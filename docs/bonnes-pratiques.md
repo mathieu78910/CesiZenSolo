@@ -155,6 +155,24 @@ fix/<nom>     ← Correction de bug (ex: fix/login-error-500)
 - Lancer les tests : `npm test` dans le répertoire `back/`
 - Les tests doivent être indépendants (pas de dépendance à une BDD live en CI)
 
+### Tests end-to-end (Selenium)
+
+- Le répertoire `e2e/` contient une suite de tests end-to-end (`e2e/tests/`) basée sur **selenium-webdriver** + `node --test`
+- `docker-compose.e2e.yml` démarre une stack complète et isolée : `db` (Postgres), `api`, `web`, un nœud `selenium/standalone-chrome` et le conteneur `e2e` qui exécute les tests
+- Parcours couverts :
+  - chargement de la page d'accueil → redirection vers `/login`
+  - inscription d'un nouvel utilisateur (`/register`)
+  - connexion d'un compte ADMIN → accès à la console (`/admin/articles`)
+- Le compte ADMIN de test est créé via `back/src/scripts/seed-e2e.ts` (idempotent, basé sur `E2E_ADMIN_EMAIL` / `E2E_ADMIN_PASSWORD`)
+- Lancer la suite en local :
+  ```bash
+  docker compose -f docker-compose.e2e.yml up -d --build db api web selenium
+  docker compose -f docker-compose.e2e.yml run --rm api npx tsx src/scripts/seed-e2e.ts
+  docker compose -f docker-compose.e2e.yml run --rm e2e
+  docker compose -f docker-compose.e2e.yml down -v
+  ```
+- Exécutée automatiquement par le job `e2e-tests` du pipeline CI
+
 ### Validation des entrées
 
 Toutes les entrées utilisateur sont validées avec **Zod** avant traitement :

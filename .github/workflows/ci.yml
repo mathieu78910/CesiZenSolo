@@ -158,6 +158,45 @@ jobs:
           VITE_API_URL: https://cesizen-staging.example.com
 
   # ──────────────────────────────────────────────────────────────
+  # Job 3 : Tests end-to-end (Selenium)
+  # ──────────────────────────────────────────────────────────────
+  e2e-tests:
+    name: Tests end-to-end (Selenium)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v6
+
+      - name: Démarrer la stack e2e (db, api, web, selenium)
+        run: docker compose -f docker-compose.e2e.yml up -d --build db api web selenium
+
+      - name: Attendre que l'API soit prête
+        run: |
+          for i in $(seq 1 30); do
+            if docker compose -f docker-compose.e2e.yml exec -T api node -e "require('http').get('http://127.0.0.1:3000/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::L'API n'a pas démarré à temps"
+          exit 1
+
+      - name: Créer le compte ADMIN de test
+        run: docker compose -f docker-compose.e2e.yml run --rm api npx tsx src/scripts/seed-e2e.ts
+
+      - name: Lancer les tests Selenium
+        run: docker compose -f docker-compose.e2e.yml run --rm e2e
+
+      - name: Récupérer les logs en cas d'échec
+        if: failure()
+        run: docker compose -f docker-compose.e2e.yml logs
+
+      - name: Nettoyer la stack e2e
+        if: always()
+        run: docker compose -f docker-compose.e2e.yml down -v
+
+  # ──────────────────────────────────────────────────────────────
   # Job 3 : Audit de sécurité des images Docker (Trivy)
   # ──────────────────────────────────────────────────────────────
   docker-audit:

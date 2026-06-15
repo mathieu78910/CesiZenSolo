@@ -11,7 +11,15 @@ export default function ThreeBackground() {
     if (!canvas) return;
 
     // Renderer WebGL attaché au canvas (alpha pour garder le fond visible).
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    // Si WebGL n'est pas disponible (navigateur sans GPU, ex: tests headless),
+    // on abandonne silencieusement plutôt que de faire planter toute la page.
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    } catch {
+      return;
+    }
+
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
     // Scène + caméra.

@@ -104,16 +104,45 @@ GitHub Actions (CI/CD)
 ### 4.1 Pipeline CI — `.github/workflows/ci.yml`
 
 Déclenché sur chaque **push** et **pull request** vers `main` ou `develop`.
+Le pipeline est composé de 3 jobs indépendants, tous requis pour que le CD se déclenche.
 
-| Étape            | Description                            |
-| ---------------- | -------------------------------------- |
-| Checkout         | Récupération du code source            |
-| Setup Node.js 22 | Configuration de l'environnement Node  |
-| npm ci (API)     | Installation des dépendances backend   |
-| TypeCheck        | Vérification des types TypeScript      |
-| Tests unitaires  | Exécution de Vitest                    |
-| npm ci (Web)     | Installation des dépendances frontend  |
-| Build Web        | Vérification que le build Vite réussit |
+#### Job `test-api`
+
+| Étape                    | Description                                                              |
+| ------------------------ | ------------------------------------------------------------------------ |
+| Checkout                  | Récupération du code source                                              |
+| Setup Node.js 22          | Configuration de l'environnement Node                                   |
+| npm ci (API)              | Installation des dépendances backend                                     |
+| Audit de sécurité (npm)   | `npm audit --omit=dev` — 🔴 Critical/🟠 High bloquent le build           |
+| Générer le client Prisma  | `npx prisma generate`                                                    |
+| TypeCheck                 | Vérification des types TypeScript                                       |
+| Tests unitaires           | Exécution de Vitest                                                      |
+
+#### Job `build-web`
+
+| Étape                          | Description                                                        |
+| ------------------------------- | ------------------------------------------------------------------ |
+| Checkout                         | Récupération du code source                                       |
+| Setup Node.js 22                 | Configuration de l'environnement Node                             |
+| npm ci + audit (cesizen-api)     | Client API partagé — `npm audit --omit=dev`                        |
+| npm ci + audit (web)             | Dépendances frontend — `npm audit --omit=dev`                      |
+| Build Web                        | Vérification que le build Vite réussit                            |
+
+#### Job `docker-audit`
+
+| Étape                              | Description                                                                  |
+| ----------------------------------- | ------------------------------------------------------------------------------ |
+| Build images API & Web              | Construction locale des deux images Docker (sans push)                       |
+| Scan Trivy (API & Web)              | Analyse des vulnérabilités OS (Alpine) + dépendances de chaque image          |
+| Récapitulatif + garde-fou           | Tableau 🔴 Critical / 🟠 High / 🟡 Medium / 🟢 Low par image — bloque si High/Critical |
+
+#### Job `e2e-tests`
+
+| Étape                              | Description                                                                  |
+| ----------------------------------- | ------------------------------------------------------------------------------ |
+| Démarrage de la stack `docker-compose.e2e.yml` | db (Postgres) + api + web + Selenium (Chrome headless)             |
+| Seed du compte ADMIN de test        | `back/src/scripts/seed-e2e.ts`                                                |
+| Tests Selenium (`e2e/tests/`)       | Parcours bout-en-bout : accès `/login`, inscription, connexion ADMIN → console |
 
 ### 4.2 Pipeline CD — `.github/workflows/cd.yml`
 

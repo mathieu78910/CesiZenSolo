@@ -1,0 +1,75 @@
+name: cesizen-e2e
+
+# Stack éphémère utilisée par la suite de tests end-to-end (Selenium).
+# Démarrage : docker compose -f docker-compose.e2e.yml up -d --build
+# Nettoyage : docker compose -f docker-compose.e2e.yml down -v
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: cesizen
+      POSTGRES_PASSWORD: cesizen
+      POSTGRES_DB: cesizen
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cesizen -d cesizen"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - e2e_net
+
+  api:
+    build:
+      context: ./back
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://cesizen:cesizen@db:5432/cesizen?schema=public
+      JWT_ACCESS_SECRET: e2e-access-secret
+      JWT_REFRESH_SECRET: e2e-refresh-secret
+      JWT_ACCESS_EXPIRES: 15m
+      JWT_REFRESH_EXPIRES: 7d
+      FRONT_ORIGIN: http://web
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - e2e_net
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+      args:
+        VITE_API_URL: http://api:3000
+    depends_on:
+      - api
+    networks:
+      - e2e_net
+
+  selenium:
+    image: selenium/standalone-chrome:latest
+    shm_size: 2g
+    depends_on:
+      - web
+    networks:
+      - e2e_net
+
+  e2e:
+    build:
+      context: ./e2e
+    environment:
+      SELENIUM_URL: http://selenium:4444/wd/hub
+      BASE_URL: http://web
+      E2E_ADMIN_EMAIL: e2e@cesizen.com
+      E2E_ADMIN_PASSWORD: Password123!
+    depends_on:
+      - selenium
+      - web
+    networks:
+      - e2e_net
+
+networks:
+  e2e_net:
+    driver: bridge

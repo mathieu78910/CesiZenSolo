@@ -86,6 +86,9 @@ Ce document couvre :
   - `Referrer-Policy: strict-origin-when-cross-origin`
   - `Content-Security-Policy` (politique stricte)
 - Fichiers `.env` jamais versionnés ni intégrés dans les images Docker
+- Conteneur API exécuté avec un utilisateur **non-root** (`USER node`)
+- `HEALTHCHECK` Docker sur l'API (`/health`) et le frontend (`/`), complétés par des healthchecks Traefik au niveau load-balancer : un conteneur en échec n'est plus jamais utilisé pour router le trafic
+- `mem_limit` défini sur tous les services (`docker-compose.prod.yml`) pour limiter l'impact d'une fuite mémoire ou d'un conteneur compromis
 
 ---
 
@@ -94,10 +97,11 @@ Ce document couvre :
 **Risque :** Dépendances npm avec des vulnérabilités connues.
 
 **Mesures en place :**
-- `npm audit` exécuté avant chaque déploiement
+- `npm audit --omit=dev` exécuté en CI sur `back`, `cesizen-api` et `web` — bloque le build si une vulnérabilité 🔴 Critical ou 🟠 High est détectée (récapitulatif visuel par sévérité dans le résumé GitHub Actions)
+- Scan **Trivy** des images Docker (API et Web) en CI — bloque le build si une vulnérabilité OS/dépendance 🔴 Critical ou 🟠 High est détectée
+- Images de base Alpine mises à jour (`apk upgrade --no-cache`) à chaque build pour intégrer les correctifs publiés après le tag de l'image officielle
+- Dependabot configuré pour ouvrir automatiquement des PR de mise à jour (npm + GitHub Actions)
 - Dépendances mises à jour mensuellement
-
-**Action recommandée :** Ajouter une étape `npm audit --audit-level=high` dans le pipeline CI pour bloquer les déploiements avec des vulnérabilités critiques.
 
 ---
 

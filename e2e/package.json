@@ -1,0 +1,12 @@
+{
+  "name": "cesizen-e2e",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "selenium-webdriver": "^4.27.0"
+  }
+}
