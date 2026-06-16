@@ -183,7 +183,10 @@ jobs:
           exit 1
 
       - name: Créer le compte ADMIN de test
-        run: docker compose -f docker-compose.e2e.yml run --rm api npx tsx src/scripts/seed-e2e.ts
+        # exec (pas run) : on utilise le conteneur api déjà démarré.
+        # `run` passerait la commande à ENTRYPOINT (entrypoint.sh) qui
+        # l'ignorerait et démarrerait le serveur → step bloqué indéfiniment.
+        run: docker compose -f docker-compose.e2e.yml exec -T api npx tsx src/scripts/seed-e2e.ts
 
       - name: Lancer les tests Selenium
         run: docker compose -f docker-compose.e2e.yml run --rm e2e
