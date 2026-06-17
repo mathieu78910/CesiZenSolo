@@ -120,7 +120,7 @@ jobs:
             docker image prune -f
           ENDSSH
 
-      - name: Créer un tag de release
+      - name: Créer la release GitHub
         uses: actions/github-script@v9
         with:
           script: |
@@ -128,10 +128,23 @@ jobs:
             const sha = fullSha.substring(0, 7);
             const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
             const tagName = `v1.0.0-${date}-${sha}`;
+
+            // Crée le tag git pointant sur le commit validé par le CI
             await github.rest.git.createRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: `refs/tags/${tagName}`,
               sha: fullSha,
             });
-            console.log(`Tag créé : ${tagName}`);
+
+            // Crée une GitHub Release avec notes de release auto-générées
+            // (liste des commits/PR depuis le tag précédent)
+            const release = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: tagName,
+              name: `🚀 ${tagName}`,
+              generate_release_notes: true,
+              make_latest: "true",
+            });
+            console.log(`Release créée : ${release.data.html_url}`);
