@@ -185,7 +185,7 @@ Cela permet de répondre à tout moment à la question : *"Dans quelle version c
 | **Hebdomadaire** | Revue des PR Dependabot ouvertes (cf. [veille technologique](veille-technologique.md)) |
 | **Mensuelle** | Vérification du renouvellement des certificats Let's Encrypt |
 | **Trimestrielle** | Mise à jour des images Docker de base (Node, Nginx, Postgres) |
-| **Avant chaque release** | Exécution complète des tests CI, revue des PR ouvertes |
+| **Avant chaque release** | Exécution complète des tests CI (unitaires Vitest + e2e Selenium + audit npm/Trivy), revue des PR ouvertes |
 
 ---
 
