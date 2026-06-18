@@ -153,6 +153,28 @@ Secrets GitHub Actions requis : `SSH_PRIVATE_KEY`, `SSH_HOST`, `SSH_USER`, `DOMA
 
 ---
 
+## Monitoring
+
+Grafana est accessible en production à `https://<domaine>/grafana` (login `admin`).
+
+Dashboard pré-configuré :
+- Compteurs : erreurs 500, connexions réussies, tentatives suspectes
+- Logs filtrés API + logs Traefik en temps réel
+- Alertes email sur erreurs 500 et brute force (SMTP requis dans `.env.prod`)
+
+Variables `.env.prod` à ajouter pour activer les alertes email :
+```env
+GRAFANA_ADMIN_PASSWORD=<mot-de-passe-fort>
+GF_SMTP_ENABLED=true
+GF_SMTP_HOST=smtp.gmail.com:587
+GF_SMTP_USER=<email>
+GF_SMTP_PASSWORD=<app-password>
+GF_SMTP_FROM_ADDRESS=<email>
+GF_ALERT_EMAIL=<destinataire>
+```
+
+---
+
 ## Suivi des évolutions
 
 [Tableau Kanban → GitHub Projects](https://github.com/users/mathieu78910/projects/2)  

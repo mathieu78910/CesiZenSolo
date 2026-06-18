@@ -1,0 +1,114 @@
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: CesiZen
+    folder: CesiZen
+    interval: 1m
+    rules:
+      # Alerte si au moins 1 erreur 500 dans les 5 dernières minutes
+      - uid: cesizen-api-500
+        title: "Erreur 500 API CesiZen"
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: loki
+            model:
+              datasource:
+                type: loki
+                uid: loki
+              expr: 'count_over_time({container="cesizen-api"} |= "500" [5m])'
+              instant: true
+              range: false
+              refId: A
+          - refId: C
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [0]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [A]
+                  reducer:
+                    params: []
+                    type: last
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: A
+              refId: C
+              type: classic_conditions
+        noDataState: OK
+        execErrState: OK
+        for: 0s
+        annotations:
+          summary: "Erreur 500 détectée dans l'API CesiZen"
+          description: "Des erreurs HTTP 500 ont été détectées dans les logs de cesizen-api au cours des 5 dernières minutes."
+        labels:
+          severity: critical
+        isPaused: false
+        notificationSettings:
+          receiver: email
+
+      # Alerte si plus de 10 tentatives de connexion invalides en 5 min (brute force)
+      - uid: cesizen-brute-force
+        title: "Tentatives de connexion suspectes"
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: loki
+            model:
+              datasource:
+                type: loki
+                uid: loki
+              expr: 'count_over_time({container="cesizen-api"} |= "[invalid_credentials]" [5m])'
+              instant: true
+              range: false
+              refId: A
+          - refId: C
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [10]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [A]
+                  reducer:
+                    params: []
+                    type: last
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: A
+              refId: C
+              type: classic_conditions
+        noDataState: OK
+        execErrState: OK
+        for: 0s
+        annotations:
+          summary: "Tentatives de connexion suspectes (>10 en 5 min)"
+          description: "Plus de 10 tentatives de connexion échouées détectées en 5 minutes — possible attaque par force brute."
+        labels:
+          severity: warning
+        isPaused: false
+        notificationSettings:
+          receiver: email

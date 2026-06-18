@@ -177,10 +177,78 @@ Cela permet de répondre à tout moment à la question : *"Dans quelle version c
 
 ---
 
-## 6. Maintenance planifiée
+## 6. Monitoring applicatif — Grafana / Loki / Promtail
+
+### 6.1 Architecture
+
+```
+Conteneurs Docker
+      │ stdout / stderr
+      ▼
+┌──────────────┐        ┌────────────┐        ┌──────────────────┐
+│   Promtail   │ ──────▶│    Loki    │ ──────▶│    Grafana       │
+│ (collecteur) │        │ (stockage) │        │ (dashboard +     │
+│              │        │            │        │  alertes email)  │
+└──────────────┘        └────────────┘        └──────────────────┘
+```
+
+- **Promtail** lit les logs de tous les conteneurs du projet via le socket Docker et les pousse vers Loki.
+- **Loki** stocke et indexe les logs sur le disque de la VM.
+- **Grafana** expose un dashboard à `https://<domaine>/grafana` (authentifié) avec :
+  - Compteurs : erreurs 500, erreurs applicatives, connexions réussies, tentatives suspectes
+  - Panels logs filtrés : erreurs uniquement, tous les logs API, logs Traefik
+
+### 6.2 Accès
+
+```
+https://<domaine>/grafana
+Login : admin / <GRAFANA_ADMIN_PASSWORD>
+```
+
+### 6.3 Alertes configurées
+
+| Règle | Condition | Sévérité |
+|---|---|---|
+| **Erreur 500 API** | ≥ 1 erreur 500 en 5 min | Critical |
+| **Brute force** | > 10 `[invalid_credentials]` en 5 min | Warning |
+
+Les alertes sont envoyées par email si SMTP est configuré dans `.env.prod` :
+
+```env
+GRAFANA_ADMIN_PASSWORD=<mot-de-passe-fort>
+GF_SMTP_ENABLED=true
+GF_SMTP_HOST=smtp.gmail.com:587
+GF_SMTP_USER=<votre-email@gmail.com>
+GF_SMTP_PASSWORD=<app-password-gmail>
+GF_SMTP_FROM_ADDRESS=<votre-email@gmail.com>
+GF_ALERT_EMAIL=<destinataire-alertes@example.com>
+```
+
+> **Sans SMTP** : les alertes restent visibles dans l'interface Grafana (onglet Alerting) mais ne sont pas envoyées par email.
+
+### 6.4 Consultation manuelle des logs (sans Grafana)
+
+```bash
+# Logs API (erreurs applicatives structurées)
+docker compose -f docker-compose.prod.yml logs api --tail=100
+
+# Logs Traefik (accès HTTP)
+docker compose -f docker-compose.prod.yml logs traefik --tail=50
+
+# Filtrer les erreurs uniquement
+docker compose -f docker-compose.prod.yml logs api | grep "\[error\]"
+
+# Suivre en temps réel
+docker compose -f docker-compose.prod.yml logs api --follow
+```
+
+---
+
+## 7. Maintenance planifiée
 
 | Fréquence | Action |
 |---|---|
+| **En continu** | Dashboard Grafana (`/grafana`) — alertes email automatiques sur erreurs 500 et brute force |
 | **Hebdomadaire** | Vérification des logs d'erreur, état des conteneurs |
 | **Hebdomadaire** | Revue des PR Dependabot ouvertes (cf. [veille technologique](veille-technologique.md)) |
 | **Mensuelle** | Vérification du renouvellement des certificats Let's Encrypt |
