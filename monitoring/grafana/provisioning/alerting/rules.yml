@@ -274,3 +274,111 @@ groups:
         isPaused: false
         notificationSettings:
           receiver: email
+
+      # Alerte si plus de 30 erreurs 404 en 5 min (scan de répertoires / ressources manquantes)
+      - uid: cesizen-404-scan
+        title: "Erreurs 404 massives (scan possible)"
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: loki
+            model:
+              datasource:
+                type: loki
+                uid: loki
+              expr: 'count_over_time({container="cesizen-traefik"} |= "\"StatusCode\":404" [5m])'
+              instant: true
+              range: false
+              refId: A
+          - refId: C
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [30]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [A]
+                  reducer:
+                    params: []
+                    type: last
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: A
+              refId: C
+              type: classic_conditions
+        noDataState: OK
+        execErrState: OK
+        for: 0s
+        annotations:
+          summary: "Erreurs 404 massives détectées (>30 en 5 min)"
+          description: "Plus de 30 requêtes vers des ressources inexistantes en 5 minutes — possible scan de répertoires ou attaque par énumération."
+        labels:
+          severity: warning
+        isPaused: false
+        notificationSettings:
+          receiver: email
+
+      # Alerte si plus de 20 erreurs 403 en 5 min (tentatives d'accès non autorisé)
+      - uid: cesizen-403-forbidden
+        title: "Tentatives d'accès interdit (403)"
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: loki
+            model:
+              datasource:
+                type: loki
+                uid: loki
+              expr: 'count_over_time({container="cesizen-traefik"} |= "\"StatusCode\":403" [5m])'
+              instant: true
+              range: false
+              refId: A
+          - refId: C
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [20]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [A]
+                  reducer:
+                    params: []
+                    type: last
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: A
+              refId: C
+              type: classic_conditions
+        noDataState: OK
+        execErrState: OK
+        for: 0s
+        annotations:
+          summary: "Tentatives d'accès interdit (>20 erreurs 403 en 5 min)"
+          description: "Plus de 20 erreurs 403 Forbidden en 5 minutes — tentatives répétées d'accès à des ressources protégées."
+        labels:
+          severity: warning
+        isPaused: false
+        notificationSettings:
+          receiver: email
