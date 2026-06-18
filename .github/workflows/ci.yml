@@ -1,10 +1,15 @@
-name: CI — Intégration Continue
+name: CI/CD — Intégration & Déploiement Continu
 
 on:
   push:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_API: ghcr.io/${{ github.repository_owner }}/cesizen-api
+  IMAGE_WEB: ghcr.io/${{ github.repository_owner }}/cesizen-web
 
 jobs:
   # ──────────────────────────────────────────────────────────────
@@ -31,8 +36,6 @@ jobs:
 
       - name: Audit de sécurité (npm audit)
         working-directory: back
-        # --omit=dev : on n'audite que les dépendances de production
-        # (devDependencies = outillage de build, non livré).
         run: |
           AUDIT=$(npm audit --omit=dev --json || true)
           CRITICAL=$(echo "$AUDIT" | jq '.metadata.vulnerabilities.critical')
@@ -50,8 +53,6 @@ jobs:
             echo "| 🟡 Moderate | $MODERATE |"
             echo "| 🟢 Low | $LOW |"
           } >> "$GITHUB_STEP_SUMMARY"
-
-          echo "🔴 Critical: $CRITICAL  🟠 High: $HIGH  🟡 Moderate: $MODERATE  🟢 Low: $LOW"
 
           if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
             echo "::error::Vulnérabilité(s) high/critical détectée(s) — build bloqué (npm audit)"
@@ -112,8 +113,6 @@ jobs:
             echo "| 🟢 Low | $LOW |"
           } >> "$GITHUB_STEP_SUMMARY"
 
-          echo "🔴 Critical: $CRITICAL  🟠 High: $HIGH  🟡 Moderate: $MODERATE  🟢 Low: $LOW"
-
           if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
             echo "::error::Vulnérabilité(s) high/critical détectée(s) — build bloqué (npm audit)"
             exit 1
@@ -143,8 +142,6 @@ jobs:
             echo "| 🟢 Low | $LOW |"
           } >> "$GITHUB_STEP_SUMMARY"
 
-          echo "🔴 Critical: $CRITICAL  🟠 High: $HIGH  🟡 Moderate: $MODERATE  🟢 Low: $LOW"
-
           if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
             echo "::error::Vulnérabilité(s) high/critical détectée(s) — build bloqué (npm audit)"
             exit 1
@@ -154,7 +151,6 @@ jobs:
         run: npm run build
         working-directory: web
         env:
-          # URL de l'API en staging (pas d'URL de prod exposée en CI)
           VITE_API_URL: https://cesizen-staging.example.com
 
   # ──────────────────────────────────────────────────────────────
@@ -183,9 +179,6 @@ jobs:
           exit 1
 
       - name: Créer le compte ADMIN de test
-        # exec (pas run) : on utilise le conteneur api déjà démarré.
-        # `run` passerait la commande à ENTRYPOINT (entrypoint.sh) qui
-        # l'ignorerait et démarrerait le serveur → step bloqué indéfiniment.
         run: docker compose -f docker-compose.e2e.yml exec -T api npx tsx src/scripts/seed-e2e.ts
 
       - name: Lancer les tests Selenium
@@ -200,7 +193,7 @@ jobs:
         run: docker compose -f docker-compose.e2e.yml down -v
 
   # ──────────────────────────────────────────────────────────────
-  # Job 3 : Audit de sécurité des images Docker (Trivy)
+  # Job 4 : Audit de sécurité des images Docker (Trivy)
   # ──────────────────────────────────────────────────────────────
   docker-audit:
     name: Audit Docker — Trivy
@@ -270,8 +263,6 @@ jobs:
               echo "| 🟢 Low | $LOW |"
             } >> "$GITHUB_STEP_SUMMARY"
 
-            echo "$NAME — 🔴 Critical: $CRITICAL  🟠 High: $HIGH  🟡 Medium: $MEDIUM  🟢 Low: $LOW"
-
             if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ]; then
               BLOCK=1
             fi
@@ -281,3 +272,127 @@ jobs:
             echo "::error::Vulnérabilité(s) high/critical détectée(s) dans une image Docker — build bloqué (Trivy)"
             exit 1
           fi
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 5 : Build & Push des images Docker (CD — main uniquement)
+  # ──────────────────────────────────────────────────────────────
+  build-and-push:
+    name: Build & Push images Docker
+    runs-on: ubuntu-latest
+    # Ne s'exécute que sur un push vers main (pas sur les PR ni sur develop)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [test-api, build-web, e2e-tests, docker-audit]
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image-tag: ${{ steps.meta-api.outputs.version }}
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v6
+
+      - name: Se connecter au GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Métadonnées de l'image API
+        id: meta-api
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.IMAGE_API }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha,prefix=sha-
+            type=raw,value=latest
+
+      - name: Build & Push image API
+        uses: docker/build-push-action@v7
+        with:
+          context: ./back
+          file: ./back/Dockerfile
+          push: true
+          tags: ${{ steps.meta-api.outputs.tags }}
+          labels: ${{ steps.meta-api.outputs.labels }}
+
+      - name: Métadonnées de l'image Web
+        id: meta-web
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.IMAGE_WEB }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=sha,prefix=sha-
+            type=raw,value=latest
+
+      - name: Build & Push image Web
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ./web/Dockerfile
+          push: true
+          tags: ${{ steps.meta-web.outputs.tags }}
+          labels: ${{ steps.meta-web.outputs.labels }}
+          build-args: |
+            VITE_API_URL=https://${{ secrets.DOMAIN }}
+
+  # ──────────────────────────────────────────────────────────────
+  # Job 6 : Déploiement SSH sur le serveur de production (CD — main uniquement)
+  # ──────────────────────────────────────────────────────────────
+  deploy:
+    name: Déployer sur le serveur de production
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build-and-push
+    permissions:
+      contents: write
+
+    steps:
+      - name: Déployer via SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+
+          ssh "$SSH_USER@$SSH_HOST" << 'ENDSSH'
+            cd /opt/cesizen
+            git pull
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+            docker image prune -f
+          ENDSSH
+
+      - name: Créer la release GitHub
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fullSha = context.sha;
+            const sha = fullSha.substring(0, 7);
+            const date = new Date().toISOString().split('T')[0].replace(/-/g, '');
+            const tagName = `v1.0.0-${date}-${sha}`;
+
+            await github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `refs/tags/${tagName}`,
+              sha: fullSha,
+            });
+
+            const release = await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: tagName,
+              name: `🚀 ${tagName}`,
+              generate_release_notes: true,
+              make_latest: "true",
+            });
+            console.log(`Release créée : ${release.data.html_url}`);
