@@ -85,7 +85,9 @@ describe("Parcours end-to-end CesiZen", () => {
   });
 
   it("un utilisateur standard ne peut pas accéder à la console admin", async () => {
+    // Vide toute session existante (évite l'interférence du token admin du test précédent)
     await driver.get(`${BASE_URL}/login`);
+    await driver.executeScript("localStorage.clear();");
 
     await (await field(driver, 'input[name="email"]')).sendKeys(USER_EMAIL);
     await (await field(driver, 'input[name="password"]')).sendKeys(USER_PASSWORD);
