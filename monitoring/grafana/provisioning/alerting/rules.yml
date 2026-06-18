@@ -112,3 +112,165 @@ groups:
         isPaused: false
         notificationSettings:
           receiver: email
+
+      # Alerte si plus de 20 tentatives d'inscription en 5 min (bot/spam)
+      - uid: cesizen-register-spam
+        title: "Inscriptions massives suspectes"
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: loki
+            model:
+              datasource:
+                type: loki
+                uid: loki
+              expr: 'count_over_time({container="cesizen-api"} |= "[register][attempt]" [5m])'
+              instant: true
+              range: false
+              refId: A
+          - refId: C
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [20]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [A]
+                  reducer:
+                    params: []
+                    type: last
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: A
+              refId: C
+              type: classic_conditions
+        noDataState: OK
+        execErrState: OK
+        for: 0s
+        annotations:
+          summary: "Inscriptions massives détectées (>20 en 5 min)"
+          description: "Plus de 20 tentatives d'inscription en 5 minutes — possible bot ou attaque par spam."
+        labels:
+          severity: warning
+        isPaused: false
+        notificationSettings:
+          receiver: email
+
+      # Alerte dès qu'un compte est anonymisé (RGPD — droit à l'oubli)
+      - uid: cesizen-account-anonymized
+        title: "Compte utilisateur anonymisé (RGPD)"
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: loki
+            model:
+              datasource:
+                type: loki
+                uid: loki
+              expr: 'count_over_time({container="cesizen-api"} |= "[account_anonymized]" [5m])'
+              instant: true
+              range: false
+              refId: A
+          - refId: C
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [0]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [A]
+                  reducer:
+                    params: []
+                    type: last
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: A
+              refId: C
+              type: classic_conditions
+        noDataState: OK
+        execErrState: OK
+        for: 0s
+        annotations:
+          summary: "Un compte a été anonymisé (droit à l'oubli RGPD)"
+          description: "Un utilisateur a exercé son droit à l'oubli — son compte a été anonymisé dans la base de données."
+        labels:
+          severity: info
+        isPaused: false
+        notificationSettings:
+          receiver: email
+
+      # Alerte si plus de 5 erreurs applicatives en 5 min (instabilité générale)
+      - uid: cesizen-error-rate
+        title: "Taux d'erreurs applicatives élevé"
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: loki
+            model:
+              datasource:
+                type: loki
+                uid: loki
+              expr: 'count_over_time({container="cesizen-api"} |= "[error]" [5m])'
+              instant: true
+              range: false
+              refId: A
+          - refId: C
+            relativeTimeRange:
+              from: 300
+              to: 0
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator:
+                    params: [5]
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params: [A]
+                  reducer:
+                    params: []
+                    type: last
+              datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+              expression: A
+              refId: C
+              type: classic_conditions
+        noDataState: OK
+        execErrState: OK
+        for: 0s
+        annotations:
+          summary: "Taux d'erreurs élevé dans l'API (>5 en 5 min)"
+          description: "Plus de 5 erreurs applicatives détectées en 5 minutes — l'API est potentiellement instable."
+        labels:
+          severity: warning
+        isPaused: false
+        notificationSettings:
+          receiver: email
