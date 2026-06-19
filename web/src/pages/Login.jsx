@@ -81,7 +81,7 @@ export default function Login() {
             <span>Se souvenir de moi</span>
           </label>
           <button type="button" className={styles.linkButton}>
-            Mot de passe oublié ??????????
+            Mot de passe oublié ???????
           </button>
         </div>
         <button
