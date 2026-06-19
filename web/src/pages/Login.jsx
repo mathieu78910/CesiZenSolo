@@ -55,7 +55,9 @@ export default function Login() {
             name="email"
             placeholder="vous@exemple.com"
             value={form.email}
-            onChange={(event) => setForm({ ...form, email: event.target.value })}
+            onChange={(event) =>
+              setForm({ ...form, email: event.target.value })
+            }
             required
           />
         </label>
@@ -66,7 +68,9 @@ export default function Login() {
             name="password"
             placeholder="••••••••"
             value={form.password}
-            onChange={(event) => setForm({ ...form, password: event.target.value })}
+            onChange={(event) =>
+              setForm({ ...form, password: event.target.value })
+            }
             required
           />
         </label>
@@ -77,10 +81,14 @@ export default function Login() {
             <span>Se souvenir de moi</span>
           </label>
           <button type="button" className={styles.linkButton}>
-            Mot de passe oublié ?
+            Mot de passe oublié ???????????
           </button>
         </div>
-        <button type="submit" className={styles.primaryButton} disabled={loading}>
+        <button
+          type="submit"
+          className={styles.primaryButton}
+          disabled={loading}
+        >
           {loading ? "Connexion..." : "Se connecter"}
         </button>
       </form>
