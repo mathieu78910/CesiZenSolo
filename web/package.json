@@ -13,7 +13,7 @@
     "@tinymce/tinymce-react": "^6.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^7.17.0",
+    "react-router-dom": "^7.18.0",
     "three": "^0.160.0",
     "tinymce": "^8.6.0"
   },
